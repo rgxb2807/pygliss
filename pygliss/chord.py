@@ -1,4 +1,4 @@
-from pygliss import Note
+from pygliss.note import Note
 MAX_INHARMONIC_TONES = 200
 
 class Chord:

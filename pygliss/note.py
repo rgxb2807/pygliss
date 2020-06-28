@@ -1,6 +1,4 @@
-from constants import DIVISIONS, BASE, A440
-import numpy as np
-
+from pygliss.constants import DIVISIONS, BASE, A440
 
 DIV = (DIVISIONS / 12)
 NOTE_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
@@ -280,26 +278,26 @@ def freq_to_note(freq):
 	Returns a note object based on a given frequency with quartertone 
 	precision.
 	"""
-	ASC_DICT = asc_notes_dict()
+	asc_dict = asc_notes_dict()
 	octave = 0
 	rounded_freq = round(freq, 8)
-	if rounded_freq >= round(ASC_DICT['C9'].frequency(), 8):
+	if rounded_freq >= round(asc_dict['C9'].frequency(), 8):
 		octave = 9
-	elif rounded_freq >= round(ASC_DICT['C8'].frequency(), 8):
+	elif rounded_freq >= round(asc_dict['C8'].frequency(), 8):
 		octave = 8
-	elif rounded_freq >= round(ASC_DICT['C7'].frequency(), 8):
+	elif rounded_freq >= round(asc_dict['C7'].frequency(), 8):
 		octave = 7
-	elif rounded_freq >= round(ASC_DICT['C6'].frequency(), 8):
+	elif rounded_freq >= round(asc_dict['C6'].frequency(), 8):
 		octave = 6
-	elif rounded_freq >= round(ASC_DICT['C5'].frequency(), 8):
+	elif rounded_freq >= round(asc_dict['C5'].frequency(), 8):
 		octave = 5
-	elif rounded_freq >= round(ASC_DICT['C4'].frequency(), 8):
+	elif rounded_freq >= round(asc_dict['C4'].frequency(), 8):
 		octave = 4
-	elif rounded_freq >= round(ASC_DICT['C3'].frequency(), 8):
+	elif rounded_freq >= round(asc_dict['C3'].frequency(), 8):
 		octave = 3
-	elif rounded_freq >= round(ASC_DICT['C2'].frequency(), 8):
+	elif rounded_freq >= round(asc_dict['C2'].frequency(), 8):
 		octave = 2
-	elif rounded_freq >= round(ASC_DICT['C1'].frequency(), 8):
+	elif rounded_freq >= round(asc_dict['C1'].frequency(), 8):
 		octave = 1
 	else:
 		octave = 0
@@ -310,112 +308,112 @@ def freq_to_note(freq):
 	comp = freq / (2 ** octave)
 
 	#C
-	if (temp_diff := abs(comp - ASC_DICT['C0'].frequency())) < diff:
-		diff = temp_diff
+	if abs(comp - asc_dict['C0'].frequency()) < diff:
+		diff = abs(comp - asc_dict['C0'].frequency())
 		note_str = "C"
 		accidental = None
-	if abs(comp - ASC_DICT['C0+'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['C0+'].frequency())
+	if abs(comp - asc_dict['C0+'].frequency()) < diff:
+		diff = abs(comp - asc_dict['C0+'].frequency())
 		note_str = "C"
 		accidental = "+"
-	if abs(comp - ASC_DICT['C0#'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['C0#'].frequency())
+	if abs(comp - asc_dict['C0#'].frequency()) < diff:
+		diff = abs(comp - asc_dict['C0#'].frequency())
 		note_str = "C"
 		accidental = "#"
-	if abs(comp - ASC_DICT['C0++'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['C0++'].frequency())
+	if abs(comp - asc_dict['C0++'].frequency()) < diff:
+		diff = abs(comp - asc_dict['C0++'].frequency())
 		note_str = "C"
 		accidental = "++"
 
 	#D
-	if abs(comp - ASC_DICT['D0'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['D0'].frequency())
+	if abs(comp - asc_dict['D0'].frequency()) < diff:
+		diff = abs(comp - asc_dict['D0'].frequency())
 		note_str = "D"
 		accidental = None
-	if abs(comp - ASC_DICT['D0+'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['D0+'].frequency())
+	if abs(comp - asc_dict['D0+'].frequency()) < diff:
+		diff = abs(comp - asc_dict['D0+'].frequency())
 		note_str = "D"
 		accidental = "+"
-	if abs(comp - ASC_DICT['D0#'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['D0#'].frequency())
+	if abs(comp - asc_dict['D0#'].frequency()) < diff:
+		diff = abs(comp - asc_dict['D0#'].frequency())
 		note_str = "D"
 		accidental = "#"
-	if abs(comp - ASC_DICT['D0++'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['D0++'].frequency())
+	if abs(comp - asc_dict['D0++'].frequency()) < diff:
+		diff = abs(comp - asc_dict['D0++'].frequency())
 		note_str = "D"
 		accidental = "++"
 
 	#E
-	if abs(comp - ASC_DICT['E0'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['E0'].frequency())
+	if abs(comp - asc_dict['E0'].frequency()) < diff:
+		diff = abs(comp - asc_dict['E0'].frequency())
 		note_str = "E"
 		accidental = None
-	if abs(comp - ASC_DICT['E0+'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['E0+'].frequency())
+	if abs(comp - asc_dict['E0+'].frequency()) < diff:
+		diff = abs(comp - asc_dict['E0+'].frequency())
 		note_str = "E"
 		accidental = "+"
 
 	#F
-	if abs(comp - ASC_DICT['F0'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['F0'].frequency())
+	if abs(comp - asc_dict['F0'].frequency()) < diff:
+		diff = abs(comp - asc_dict['F0'].frequency())
 		note_str = "F"
 		accidental = None
-	if abs(comp - ASC_DICT['F0+'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['F0+'].frequency())
+	if abs(comp - asc_dict['F0+'].frequency()) < diff:
+		diff = abs(comp - asc_dict['F0+'].frequency())
 		note_str = "F"
 		accidental = "+"
-	if abs(comp - ASC_DICT['F0#'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['F0#'].frequency())
+	if abs(comp - asc_dict['F0#'].frequency()) < diff:
+		diff = abs(comp - asc_dict['F0#'].frequency())
 		note_str = "F"
 		accidental = "#"
-	if abs(comp - ASC_DICT['F0++'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['F0++'].frequency())
+	if abs(comp - asc_dict['F0++'].frequency()) < diff:
+		diff = abs(comp - asc_dict['F0++'].frequency())
 		note_str = "F"
 		accidental = "++"
 
 	#G
-	if abs(comp - ASC_DICT['G0'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['G0'].frequency())
+	if abs(comp - asc_dict['G0'].frequency()) < diff:
+		diff = abs(comp - asc_dict['G0'].frequency())
 		note_str = "G"
 		accidental = None
-	if abs(comp - ASC_DICT['G0+'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['G0+'].frequency())
+	if abs(comp - asc_dict['G0+'].frequency()) < diff:
+		diff = abs(comp - asc_dict['G0+'].frequency())
 		note_str = "G"
 		accidental = "+"
-	if abs(comp - ASC_DICT['G0#'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['G0#'].frequency())
+	if abs(comp - asc_dict['G0#'].frequency()) < diff:
+		diff = abs(comp - asc_dict['G0#'].frequency())
 		note_str = "G"
 		accidental = "#"
-	if abs(comp - ASC_DICT['G0++'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['G0++'].frequency())
+	if abs(comp - asc_dict['G0++'].frequency()) < diff:
+		diff = abs(comp - asc_dict['G0++'].frequency())
 		note_str = "G"
 		accidental = "++"
 
 	#A
-	if abs(comp - ASC_DICT['A0'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['A0'].frequency())
+	if abs(comp - asc_dict['A0'].frequency()) < diff:
+		diff = abs(comp - asc_dict['A0'].frequency())
 		note_str = "A"
 		accidental = None
-	if abs(comp - ASC_DICT['A0+'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['A0+'].frequency())
+	if abs(comp - asc_dict['A0+'].frequency()) < diff:
+		diff = abs(comp - asc_dict['A0+'].frequency())
 		note_str = "A"
 		accidental = "+"
-	if abs(comp - ASC_DICT['A0#'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['A0#'].frequency())
+	if abs(comp - asc_dict['A0#'].frequency()) < diff:
+		diff = abs(comp - asc_dict['A0#'].frequency())
 		note_str = "A"
 		accidental = "#"
-	if abs(comp - ASC_DICT['A0++'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['A0++'].frequency())
+	if abs(comp - asc_dict['A0++'].frequency()) < diff:
+		diff = abs(comp - asc_dict['A0++'].frequency())
 		note_str = "A"
 		accidental = "++"
 
 	#B
-	if abs(comp - ASC_DICT['B0'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['B0'].frequency())
+	if abs(comp - asc_dict['B0'].frequency()) < diff:
+		diff = abs(comp - asc_dict['B0'].frequency())
 		note_str = "B"
 		accidental = None
-	if abs(comp - ASC_DICT['B0+'].frequency()) < diff:
-		diff = abs(comp - ASC_DICT['B0+'].frequency())
+	if abs(comp - asc_dict['B0+'].frequency()) < diff:
+		diff = abs(comp - asc_dict['B0+'].frequency())
 		note_str = "B"
 		accidental = "+"
 

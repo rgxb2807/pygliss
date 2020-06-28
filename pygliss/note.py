@@ -22,7 +22,6 @@ class Note:
 		self.freq = None
 		self.set_steps()
 
-
 	def __str__(self):
 		if self.accidental is not None:
 		    return str(self.note) + str(self.octave) + str(self.accidental)
@@ -60,7 +59,6 @@ class Note:
 	def distance(self, other_note):
 		"""Returns the number of quarter tone steps between the given note."""
 		return abs(self.steps - other_note.steps)
-
 
     # http://pages.mtu.edu/~suits/NoteFreqCalcs.html
 	def frequency(self):
@@ -204,10 +202,8 @@ def next_note(the_note):
 	    return None
 
 
-
 def prev_note(the_note):
 	"""Returns the previous note in an descending quarter-tone scale."""
-	
 	note = the_note.note
 	octave = the_note.octave
 	accidental = the_note.accidental

@@ -1,4 +1,5 @@
-from pygliss.note import Note
+from pygliss.note import Note, freq_to_note
+
 MAX_INHARMONIC_TONES = 200
 
 class Chord:
@@ -85,7 +86,7 @@ class Chord:
 # high-frequency solutions.  A frequency sensative method to be 
 # implemented 
 
-def overtone_chord(chord, m):
+def nearest_ot_chord(chord, m):
 
 	ot_chord = list()
 	ot_chord_found = False
@@ -127,9 +128,9 @@ def overtone_chord(chord, m):
 						ot_chord_found = True
 
 	if ot_chord_found == True:
-		return Chord(ot_chord, 1), fundamental, final_steps
+		return (Chord(ot_chord, 1), fundamental, final_steps)
 	else:
-		return None, None, None
+		return (None, None, None)
 
 
 def diff_tones(chord, carrier=0.0):

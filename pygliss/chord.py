@@ -4,9 +4,10 @@ MAX_INHARMONIC_TONES = 200
 class Chord:
 
 	def __init__ (self, notes, dur=0):
-		self.notes = sorted(list(set(notes)), key=lambda x: x.frequency())
+		# self.notes = sorted(list(set(notes)), key=lambda x: x.frequency())
+		self.notes = sorted(notes, key=lambda x: x.frequency())
 		self.dur = dur
-		self.remove_duplicates()
+		# self.remove_duplicates()
 
 	def __str__ (self):
 		s = ''
@@ -42,25 +43,27 @@ class Chord:
 	def distance(self, other_chord):
 		total_dist = 0
 		for i, note in enumerate(self.notes):
-			if len(self.notes) == len(other_chord.notes):
-				total_dist += note.distance(other_chord.notes[i])
-			else:
-				pass
+			candidate_dist = float("inf")
+			for j, other_note in enumerate(other_chord.notes):
+				temp = note.distance(other_note)
+				if temp < candidate_dist:
+					candidate_dist = temp
+			total_dist += candidate_dist
 		return total_dist
 
 	def highest_note(self):
 		highest, highest_freq = None, float("-inf")
 		for note in self.notes:
-			if note.frequency > highest_freq:
-				highest_freq = note.frequency
+			if note.frequency() > highest_freq:
+				highest_freq = note.frequency()
 				highest = note
 		return highest
 
 	def lowest_note(self):
 		lowest, lowest_freq = None, float("inf")
 		for note in self.notes:
-			if note.frequency < lowest_freq:
-				lowest_freq = note.frequency
+			if note.frequency() < lowest_freq:
+				lowest_freq = note.frequency()
 				lowest = note
 		return lowest
 

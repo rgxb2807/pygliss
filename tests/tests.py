@@ -15,8 +15,61 @@ class TestNoteMethods(unittest.TestCase):
 
 class TestChordMethods(unittest.TestCase):
 
-	def test_chord(self):
-		self.assertEqual(1,1)
+	def test_chord_distance_1(self):
+		C_maj = pygliss.chord.Chord([
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('E', 4),
+			pygliss.note.Note('G', 4),
+			])
+		
+		C_min = pygliss.chord.Chord([
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('E', 4, "b"),
+			pygliss.note.Note('G', 4)
+			])
+		self.assertEqual(C_maj.distance(C_min), 2)
+
+	def test_chord_distance_1(self):
+		C_maj = pygliss.chord.Chord([
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('E', 4),
+			pygliss.note.Note('G', 4),
+			])
+		
+		C_min_7 = pygliss.chord.Chord([
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('E', 4, "b"),
+			pygliss.note.Note('G', 4),
+			pygliss.note.Note('B', 4, "b")
+			])
+		self.assertEqual(C_maj.distance(C_min_7), 2)
+
+	def test_highest(self):
+		C_maj = pygliss.chord.Chord([
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('E', 4),
+			pygliss.note.Note('G', 4),
+			])
+		self.assertEqual(C_maj.highest_note(), pygliss.note.Note('G', 4))
+
+	def test_lowest(self):
+		C_maj = pygliss.chord.Chord([
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('E', 4),
+			pygliss.note.Note('G', 4),
+			])
+		self.assertEqual(C_maj.lowest_note(), pygliss.note.Note('C', 4))
+
+	def test_closest(self):
+		C_maj = pygliss.chord.Chord([
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('E', 4),
+			pygliss.note.Note('G', 4),
+			])
+		self.assertEqual(C_maj.closet_note(pygliss.note.Note('C', 4, "#")), pygliss.note.Note('C', 4))
+
+
+
 
 
 if __name__ == '__main__':

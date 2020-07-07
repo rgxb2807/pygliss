@@ -84,23 +84,30 @@ class TestChordMethods(unittest.TestCase):
 		self.assertEqual(C_maj,ot[0])
 	
 	def test_ot_2(self):
-		C_wt_clus = pygliss.chord.Chord([
+		C_wt_clus_ot = pygliss.chord.Chord([
 			pygliss.note.Note('C', 4),
 			pygliss.note.Note('D', 4),
 			pygliss.note.Note('E', 4),
 			pygliss.note.Note('F', 4, "+")
 			])
-		ot = pygliss.chord.nearest_ot_chord(C_wt_clus, 10)
+		ot = pygliss.chord.nearest_ot_chord(C_wt_clus_ot, 10)
 		print("** Nearest Overtone Chord Test 2 **")
 		print(f"found chord:{ot[0]}")
 		print(f"fundamental:{ot[1]}")
 		print(f"steps:{ot[2]}")
 		print()
-		self.assertEqual(C_wt_clus,ot[0])
+		self.assertEqual(C_wt_clus_ot, ot[0])
 
 	def test_ot_3(self):
 		C_wt_clus = pygliss.chord.Chord([
 			pygliss.note.Note('C', 4),
+			pygliss.note.Note('D', 4),
+			pygliss.note.Note('E', 4),
+			pygliss.note.Note('F', 4, "#")
+			])
+
+		Nearest_ot = pygliss.chord.Chord([
+			pygliss.note.Note('B', 3, "+"),
 			pygliss.note.Note('D', 4),
 			pygliss.note.Note('E', 4),
 			pygliss.note.Note('F', 4, "#")
@@ -111,7 +118,7 @@ class TestChordMethods(unittest.TestCase):
 		print(f"fundamental:{ot[1]}")
 		print(f"steps:{ot[2]}")
 		print()
-		self.assertEqual(C_wt_clus,ot[0])
+		self.assertEqual(Nearest_ot, ot[0])
 
 
 

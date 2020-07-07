@@ -58,18 +58,18 @@ The goal of this program is to allow the user to calculate these structures quic
 
 ## Class List
 
-### Note.py
+### note.py
 Notes are divided into 24 steps rather than 12 to allow a quarter tone equally tempered scale
 
 
-### Chord.py
+### chord.py
 Accepts Arrays of Notes as an argument
 
 
-### Gliss.py
+### gliss.py
 Accepts a start note and an end note as arguments.  Creates an array of notes with quarter note resolution between the two notes
 
-### GlissCmpr.py
+### gliss_cmpr.py
 Takes a variable number of glissandi as arguments and calculates the chordal relationship between them.
 
 

@@ -268,6 +268,29 @@ def desc_notes_dict(low=Note('C', 0), high=Note('C', 9)):
 
 	return notes_dict
 
+def asc_notes_list(low=Note('C', 0), high=Note('C', 9)):
+	"""Returns a list of ascending notes."""
+	notes_list = list()
+	current_note = low
+	while(current_note.frequency() <= high.frequency()):
+		current_note.Prev = current_note
+		current_note.Next = next_note(current_note)
+		notes_list.append(current_note)
+		current_note = current_note.Next
+	return notes_list
+
+
+def desc_notes_dict(low=Note('C', 0), high=Note('C', 9)):
+	"""Returns a list of descending notes."""
+	notes_list = list()
+	current_note = high
+	while(current_note.frequency() >= low.frequency()):
+		current_note.Next = current_note
+		current_note.Prev = prev_note(current_note)
+		notes_list.append(current_note)
+		current_note = current_note.Prev
+	return notes_list
+
 
 def freq_to_note(freq):
 	"""

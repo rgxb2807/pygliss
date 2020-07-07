@@ -1,6 +1,3 @@
-from pygliss import constants
-from pygliss import note
-from pygliss import utils
-from pygliss import chord
+from pygliss import constants, note, utils, chord, gliss, gliss_cmpr
 
-__all__ = [constants, note, utils, chord]
+__all__ = [constants, note, utils, chord, gliss, gliss_cmpr]

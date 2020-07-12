@@ -121,6 +121,22 @@ class TestChordMethods(unittest.TestCase):
 		self.assertEqual(Nearest_ot, ot[0])
 
 
+class TestGlissMethods(unittest.TestCase):
+	def test_gliss_1(self):
+		g = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 5)
+			)
+		self.assertEqual(len(g.notes), 24)
+
+	def test_gliss_2(self):
+		g = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 5, "+")
+			)
+		self.assertEqual(g.length, 25)
+
+
 
 
 

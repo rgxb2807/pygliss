@@ -46,13 +46,8 @@ class Gliss:
 		set_length(self)
 		set_notes(self)
 
-
 	def __str__(self):
 		s = ''
 		for note in self.notes:
 			s += str(note) + ", "
 		return s
-
-
-# a = Gliss(ASC_DICT['C3'], ASC_DICT['C5'])
-# print(a)

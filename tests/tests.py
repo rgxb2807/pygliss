@@ -1,5 +1,6 @@
 import unittest
 import pygliss
+from music21 import pitch
 
 class TestNoteMethods(unittest.TestCase):
 
@@ -136,8 +137,95 @@ class TestGlissMethods(unittest.TestCase):
 			)
 		self.assertEqual(g.length, 25)
 
+	def test_gliss_3(self):
+		g = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 5),
+			resolution=2
+			)
+		self.assertEqual(g.length, 12)
+
+	# add case to favor end note when resolution doesn't divide evenly
+	# add case to favor start note
+
+class TestGlissMethods(unittest.TestCase):
+	def test_gliss_cmpr(self):
+		g1 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 5)
+			)
+		g2 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 3)
+			)
+		g3 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('G', 4)
+			)
+		comp = pygliss.gliss_cmpr.Gliss_Cmpr([g1, g2, g3])
+		self.assertEqual(comp.lcm, 168)
+
+	def test_gliss_cmpr(self):
+		g1 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 5),
+			resolution=3
+			)
+		g2 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 3),
+			resolution=2
+			)
+		g3 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('G', 4)
+			)
+		comp = pygliss.gliss_cmpr.Gliss_Cmpr([g1, g2, g3])
+		self.assertEqual(comp.lcm, 168)
 
 
+class TestMus21Methods(unittest.TestCase):
+	
+
+	def test_pitch_conversion_1(self):
+		n = pygliss.note.Note('C', 4)
+		self.assertEqual(pygliss.mus21.get_mus21_pitch(n), pitch.Pitch("C4"))
+
+	def test_pitch_conversion_2(self):
+		n = pygliss.note.Note('C', 4, "+")
+		self.assertEqual(pygliss.mus21.get_mus21_pitch(n), pitch.Pitch("C4~"))
+
+	def test_pitch_conversion_3(self):
+		n = pygliss.note.Note('C', 4, "#")
+		self.assertEqual(pygliss.mus21.get_mus21_pitch(n), pitch.Pitch("C4#"))
+
+	def test_pitch_conversion_4(self):
+		n = pygliss.note.Note('C', 4, "++")
+		self.assertEqual(pygliss.mus21.get_mus21_pitch(n), pitch.Pitch("C4#~"))
+
+	def test_pitch_conversion_5(self):
+		n = pygliss.note.Note('D', 4, "-")
+		self.assertEqual(pygliss.mus21.get_mus21_pitch(n), pitch.Pitch("D`4"))
+
+	def test_pitch_conversion_6(self):
+		n = pygliss.note.Note('D', 4, "b")
+		self.assertEqual(pygliss.mus21.get_mus21_pitch(n), pitch.Pitch("D-4"))
+
+	def test_pitch_conversion_7(self):
+		n = pygliss.note.Note('D', 4, "--")
+		self.assertEqual(
+			pygliss.mus21.get_mus21_pitch(n), 
+			pitch.Pitch(name="D", accidental="one-and-a-half-flat", octave="4"))
+
+
+
+
+	def test_seq(self):
+		self.assertEqual(pygliss.mus21.seq("test"), True)
+		
+
+	# def test_playbach(self):
+	# 	self.assertEqual(pygliss.mus21.playbach(), True)
 
 
 

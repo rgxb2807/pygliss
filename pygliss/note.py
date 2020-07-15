@@ -145,7 +145,7 @@ def get_accidental_steps(accidental):
 	return steps
 
 
-def next_note(the_note):
+def next_qtr_note(the_note):
 	"""Returns the next note in an ascending quarter-tone scale."""
 	note = the_note.note
 	octave = the_note.octave
@@ -202,7 +202,7 @@ def next_note(the_note):
 	    return None
 
 
-def prev_note(the_note):
+def prev_qtr_note(the_note):
 	"""Returns the previous note in an descending quarter-tone scale."""
 	note = the_note.note
 	octave = the_note.octave
@@ -236,6 +236,30 @@ def prev_note(the_note):
 	else:
 		return None
 
+
+def next_note(the_note, resolution=1):
+	"""
+	returns the next note based on the number of quarter tone steps specified 
+	in the resolution.
+	"""
+	count = 0
+	while count < resolution:
+		the_note = next_qtr_note(the_note)
+		count += 1
+	return the_note
+
+
+def prev_note(the_note, resolution=1):
+	"""
+	returns the previous note based on the number of quarter tone steps 
+	specified in the resolution.
+	"""
+	count = 0
+	while count < resolution:
+		the_note = prev_qtr_note(the_note)
+		count += 1
+	return the_note
+
  
 def get_steps(note, octave, accidental):
 	"""returns number of steps based on the number of divisions."""
@@ -244,49 +268,49 @@ def get_steps(note, octave, accidental):
 	steps += get_accidental_steps(accidental)
 
 
-def asc_notes_dict(low=Note('C', 0), high=Note('C', 9)):
+def asc_notes_dict(low=Note('C', 0), high=Note('C', 9), resolution=1):
 	"""Returns a dict of ascending notes."""
 	notes_dict = dict()
 	current_note = low
 	while(current_note.frequency() <= high.frequency()):
 		current_note.Prev = current_note
-		current_note.Next = next_note(current_note)
+		current_note.Next = next_note(current_note, resolution)
 		notes_dict[str(current_note)] = current_note
 		current_note = current_note.Next
 	return notes_dict
 
 
-def desc_notes_dict(low=Note('C', 0), high=Note('C', 9)):
+def desc_notes_dict(low=Note('C', 0), high=Note('C', 9), resolution=1):
 	"""Returns a dict of descending notes."""
 	notes_dict = dict()
 	current_note = high
 	while(current_note.frequency() >= low.frequency()):
 		current_note.Next = current_note
-		current_note.Prev = prev_note(current_note)
+		current_note.Prev = prev_note(current_note, resolution)
 		notes_dict[str(current_note)] = current_note
 		current_note = current_note.Prev
 
 	return notes_dict
 
-def asc_notes_list(low=Note('C', 0), high=Note('C', 9)):
+def asc_notes_list(low=Note('C', 0), high=Note('C', 9), resolution=1):
 	"""Returns a list of ascending notes."""
 	notes_list = list()
 	current_note = low
 	while(current_note.frequency() <= high.frequency()):
 		current_note.Prev = current_note
-		current_note.Next = next_note(current_note)
+		current_note.Next = next_note(current_note, resolution)
 		notes_list.append(current_note)
 		current_note = current_note.Next
 	return notes_list
 
 
-def desc_notes_dict(low=Note('C', 0), high=Note('C', 9)):
+def desc_notes_list(low=Note('C', 0), high=Note('C', 9), resolution=1):
 	"""Returns a list of descending notes."""
 	notes_list = list()
 	current_note = high
 	while(current_note.frequency() >= low.frequency()):
 		current_note.Next = current_note
-		current_note.Prev = prev_note(current_note)
+		current_note.Prev = prev_note(current_note, resolution)
 		notes_list.append(current_note)
 		current_note = current_note.Prev
 	return notes_list

@@ -215,13 +215,35 @@ class TestMus21Methods(unittest.TestCase):
 		n = pygliss.note.Note('D', 4, "--")
 		self.assertEqual(
 			pygliss.mus21.get_mus21_pitch(n), 
-			pitch.Pitch(name="D", accidental="one-and-a-half-flat", octave="4"))
+			pitch.Pitch("D-`4"))
+		# self.assertEqual(
+		# 	pygliss.mus21.get_mus21_pitch(n), 
+		# 	pitch.Pitch(name="D", accidental="one-and-a-half-flat", octave="4"))
 
 
 
 
-	def test_seq(self):
-		self.assertEqual(pygliss.mus21.seq("test"), True)
+	# def test_seq(self):
+	# 	self.assertEqual(pygliss.mus21.seq("test"), True)
+
+	def test_comp_stream(self):
+		g1 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 5)
+			)
+		g2 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('G', 4)
+			)
+
+		g3 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('C', 3)
+			)
+		comp = pygliss.gliss_cmpr.Gliss_Cmpr([g1, g2, g3])
+		cs  = pygliss.mus21.comp_stream(comp)
+
+		self.assertEqual(pygliss.mus21.write_stream(cs, "testing_file"), True)
 		
 
 	# def test_playbach(self):

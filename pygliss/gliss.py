@@ -1,6 +1,6 @@
 from pygliss.note import Note, asc_notes_list, desc_notes_list
 
-# add error handling for when resolution doesn't divide evening
+# add error handling for when resolution doesn't divide evenly
 # add option  - favor end note or start note
 
 class Gliss:

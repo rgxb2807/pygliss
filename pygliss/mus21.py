@@ -16,85 +16,59 @@ def get_mus21_pitch(note):
 		return pitch.Pitch(name=note.note + "-" + str(note.octave))
 	elif note.accidental == '--':
 		return pitch.Pitch(name=note.note + "-`" + str(note.octave))
-		# return pitch.Pitch(name=note.note, accidental="one-and-a-half-flat", octave=str(note.octave))
 	else:
 		return pitch.Pitch(note.note + str(note.octave))
 
 
 def playbach():
+	"""Playback Test - Play Bach bwv66.6 from Corpus."""
 	b = corpus.parse('bach/bwv66.6')
 	print(b)
 	sp = midi.realtime.StreamPlayer(b)
 	sp.play()
 	return True
 
-def seq(filename):
+
+def comp_stream(comp, bpm=60, length=0.25, constrain=False):
 	"""."""
-	p1 = stream.Part()
-	n1 = m21note.Note('D', quarterLength=0.25)
-	p1.append(n1)
-	n2 = m21note.Note('D', quarterLength=0.25)
-	p1.append(n2)
-	n3 = m21note.Note('E', quarterLength=0.25)
-	p1.append(n3)
-	n4 = m21note.Note('D', quarterLength=0.25)
-	p1.append(n4)
+	parts = [stream.Part() for i in range(len(comp.chords[0].notes))]
+	parts.append(tempo.MetronomeMark(number=bpm))
 
-	p2 = stream.Part()
-	n1 = m21note.Note('F', quarterLength=0.25)
-	p2.append(n1)
-	n2 = m21note.Note('F', quarterLength=0.25)
-	p2.append(n2)
-	n3 = m21note.Note('G', quarterLength=0.25)
-	p2.append(n3)
-	n4 = m21note.Note('F~', quarterLength=0.25)
-	p2.append(n4)
+	if constrain:
+		# find the longest gliss
+		longest = max(comp.glissandi_len)
+		# set the reosolution of that gliss to be duration of the specified length
+		for chord in comp.all_chords:
+			for idx, note in enumerate(chord.notes):
+				if comp.glissandi_len[idx] == longest:
+					parts[idx].append(m21note.Note(get_mus21_pitch(note), quarterLength=length))
+				else:
+					#ratio should round to the nearest 2,3,4,5,6,7,8,9
+					# temporarily just end ratio as is
+					# gliss 1 is 12
+					# gliss 2 is 6
 
-	p3 = stream.Part()
-	n1 = m21note.Note('A', quarterLength=0.25)
-	p3.append(n1)
-	n2 = m21note.Note('A', quarterLength=0.25)
-	p3.append(n2)
-	n3 = m21note.Note('C', quarterLength=0.25)
-	p3.append(n3)
-	n4 = m21note.Note('C', quarterLength=0.25)
-	p3.append(n4)
+					ratio = longest / comp.glissandi_len[idx]
+					parts[idx].append(m21note.Note(get_mus21_pitch(note), quarterLength=ratio * length))
 
-	mm1 = tempo.MetronomeMark(number=30)
-	s2 = stream.Stream([p1, p2, p3, mm1])
 
-	sp = midi.realtime.StreamPlayer(s2)
-	sp.play()
-	s2.write("musicxml", filename + ".musicxml")
-	s2.write("midi", filename + ".midi")
-	return True
+		# build the other voices as ratios of to that gliss
+		# omit the starting notes at first if the ratios don't map perfectly
 
-def comp_stream(comp):
-	"""."""
-	print(comp)
-	print("------")
-	print()
-	# parts = [stream.Part()] * len(comp.chords[0].notes)
-	p1 = stream.Part()
-	p2 = stream.Part()
-	p3 = stream.Part()
-	for chord in comp.all_chords:
-		p1.append(m21note.Note(get_mus21_pitch(chord.notes[0]), quarterLength=0.25))
-		p2.append(m21note.Note(get_mus21_pitch(chord.notes[1]), quarterLength=0.25))
-		p3.append(m21note.Note(get_mus21_pitch(chord.notes[2]), quarterLength=0.25))
-		# for idx, note in enumerate(chord.notes):
-			# parts[idx].append(m21note.Note(get_mus21_pitch(note), quarterLength=1))
+	else:
+		for chord in comp.all_chords:
+			for idx, note in enumerate(chord.notes):
+				parts[idx].append(m21note.Note(get_mus21_pitch(note), quarterLength=length))
 
-	mm1 = tempo.MetronomeMark(number=60)
-	s = stream.Stream([p3, p2, p1, mm1])
-	# s.write("musicxml", "test_comp" + ".musicxml")
+		
+	s = stream.Stream(parts)
 	return s
-
 
 def play_stream(s):
 	sp = midi.realtime.StreamPlayer(s)
 	sp.play()
 	return True
+
 
 def write_stream(s, filename):
 	s.write("musicxml", filename + ".musicxml")

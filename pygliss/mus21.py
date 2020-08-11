@@ -75,87 +75,91 @@ def longest_gliss(glissandi):
 	return longest
 
 def get_note_duration(note_length, denom):
-	duration = None
+	print(f"DENOM:{denom}")
+	dur = None
 	#3/2
 	if denom == 3:
 		if note_length == (1/3):
-			duration = duration.Duration(type='eighth')
+			dur = duration.Duration(type='eighth')
 		elif note_length == (2/3):
-			duration = duration.Duration(type='quarter')
-		duration.appendTuplet(duration.Tuplet(3,2, 'eighth'))
+			dur = duration.Duration(type='quarter')
+		dur.appendTuplet(duration.Tuplet(3,2, 'eighth'))
 	
 	#5/4
 	elif denom == 5:
 		if note_length == (1/5):
-			duration = duration.Duration(type='16th')
+			dur = duration.Duration(type='16th')
 		elif note_length == (2/5):
-			duration = duration.Duration(type='eighth')
+			dur = duration.Duration(type='eighth')
 		elif note_length == (3/5):
-			duration = duration.Duration(type='eighth', dots=1)
+			dur = duration.Duration(type='eighth', dots=1)
 		elif note_length == (4/5):
-			duration = duration.Duration(type='quarter')
-		duration.appendTuplet(duration.Tuplet(5,4, '16th'))
+			dur = duration.Duration(type='quarter')
+		dur.appendTuplet(duration.Tuplet(5,4, '16th'))
 
 	#6/4
 	elif denom == 6:
 		if note_length == (1/6):
-			duration = duration.Duration(type='16th')
+			dur = duration.Duration(type='16th')
 		elif note_length == (2/6):
-			duration = duration.Duration(type='eighth')
+			dur = duration.Duration(type='eighth')
 		elif note_length == (3/6):
-			duration = duration.Duration(type='eighth', dots=1)
+			dur = duration.Duration(type='eighth', dots=1)
 		elif note_length == (4/6):
-			duration = duration.Duration(type='quarter')
+			dur = duration.Duration(type='quarter')
 		elif note_length == (5/6):
 			# FIX - ADD TIE -  X X X X X
 			# Should be quarter + 16th
-			duration = duration.Duration(type='quarter')
-		duration.appendTuplet(duration.Tuplet(5,4, '16th'))
+			dur = duration.Duration(type='quarter')
+		dur.appendTuplet(duration.Tuplet(5,4, '16th'))
 	
 	#7/4
 	elif denom == 7:
+		print(f"7 => {note_length}")
 		if note_length == (1/7):
-			duration = duration.Duration(type='16th')
+			dur = duration.Duration(type='16th')
 		elif note_length == (2/7):
-			duration = duration.Duration(type='eighth')
+			dur = duration.Duration(type='eighth')
 		elif note_length == (3/7):
-			duration = duration.Duration(type='eighth', dots=1)
+			dur = duration.Duration(type='eighth', dots=1)
 		elif note_length == (4/7):
-			duration = duration.Duration(type='quarter')
+			dur = duration.Duration(type='quarter')
 		elif note_length == (5/7):
 			# FIX - ADD TIE -  X X X X X
 			# Should be quarter + 16th
-			duration = duration.Duration(type='quarter')
+			dur = duration.Duration(type='quarter')
 		elif note_length == (6/7):
-			duration = duration.Duration(type='quarter', dots=1)
-		duration.appendTuplet(duration.Tuplet(7,4, '16th'))
+			print("NAH")
+			dur = duration.Duration(type='quarter', dots=1)
+		dur.appendTuplet(duration.Tuplet(7,4, '16th'))
 
 	#9/8
 	elif denom == 9:
+		print(f"9 => {note_length}")
 		if note_length == (1/9):
-			duration = duration.Duration(type='32nd')
+			dur = duration.Duration(type='32nd')
 		elif note_length == (2/9):
-			duration = duration.Duration(type='16th')
+			dur = duration.Duration(type='16th')
 		elif note_length == (3/9):
-			duration = duration.Duration(type='16th', dots=1)
+			dur = duration.Duration(type='16th', dots=1)
 		elif note_length == (4/9):
-			duration = duration.Duration(type='eighth')
+			dur = duration.Duration(type='eighth')
 		elif note_length == (5/9):
 			# FIX - ADD TIE -  X X X X X
 			# Should be quarter + 16th
-			duration = duration.Duration(type='eighth')
+			dur = duration.Duration(type='eighth')
 		elif note_length == (6/9):
-			duration = duration.Duration(type='eighth', dots=1)
+			dur = duration.Duration(type='eighth', dots=1)
 		elif note_length == (7/9):
-			duration = duration.Duration(type='eighth', dots=2)
+			dur = duration.Duration(type='eighth', dots=2)
 		elif note_length == (8/9):
-			duration = duration.Duration(type='quarter')
-		duration.appendTuplet(duration.Tuplet(9,8, '32nd'))
+			dur = duration.Duration(type='quarter')
+		dur.appendTuplet(duration.Tuplet(9,8, '32nd'))
 
 
-	duration = duration.Duration(type='eighth', dots=1)
-	duration.appendTuplet(duration.Tuplet(7,4, '16th'))
-	return duration
+	# duration = duration.Duration(type='eighth', dots=1)
+	# duration.appendTuplet(duration.Tuplet(7,4, '16th'))
+	return dur
 
 
 def build_note_sequence(gliss, longest, length=0.25):
@@ -181,16 +185,22 @@ def build_note_sequence(gliss, longest, length=0.25):
 			#if tied from previous note
 			if prev > 0:
 				if math.isclose((note_length + prev), 1):
-					note = m21note.Note(pitch, quarterLength=note_length)
+					# note = m21note.Note(pitch, quarterLength=note_length)
+					note = m21note.Note(pitch)
+					note.duration = get_note_duration(note_length, denom)
 					part.append(note)
 					prev = 0
 				elif (note_length + prev) < 1:
-					note = m21note.Note(pitch, quarterLength=note_length)
+					# note = m21note.Note(pitch, quarterLength=note_length)
+					note = m21note.Note(pitch)
+					note.duration = get_note_duration(note_length, denom)
 					part.append(note)
 					prev += note_length
 				else:
 					first_length, _ = get_note_length(1-prev)
-					first_note = m21note.Note(pitch, quarterLength=first_length)
+					# first_note = m21note.Note(pitch, quarterLength=first_length)
+					first_note = m21note.Note(pitch)
+					first_note.duration = get_note_duration(first_length, denom)
 					part.append(first_note)
 					
 					# check for middle note
@@ -201,22 +211,31 @@ def build_note_sequence(gliss, longest, length=0.25):
 					
 					# end note
 					end_length = (note_length - middle_length - first_length)
-					end_note = m21note.Note(pitch, quarterLength=end_length)
+					# end_note = m21note.Note(pitch, quarterLength=end_length)
+					end_note = m21note.Note(pitch)
+					end_note.duration = get_note_duration(end_length, denom)
 					part.append(end_note)
 					prev = end_length
 
 			else:
 				if note_length < 1:
-					note = m21note.Note(pitch, quarterLength=note_length)
+					# note = m21note.Note(pitch, quarterLength=note_length)
+					note = m21note.Note(pitch)
+					note.duration = get_note_duration(note_length, denom)
 					part.append(note)
 					prev = note_length
 				else:
 					first_length = note_length // 1
 					if first_length > 0:
 						first_note = m21note.Note(pitch, quarterLength=first_length)
+						# first_note = m21note.Note(pitch)
+						# first_note.duration = get_note_duration(first_length, denom)
+
 
 					end_length = (note_length - first_length)
-					end_note = m21note.Note(pitch, quarterLength=end_length)
+					# end_note = m21note.Note(pitch, quarterLength=end_length)
+					end_note = m21note.Note(pitch)
+					end_note.duration = get_note_duration(end_length, denom)
 					part.append(end_note)
 					prev = end_length
 	return part

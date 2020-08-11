@@ -116,19 +116,25 @@ def get_note_duration(note_length, denom):
 	#7/4
 	elif denom == 7:
 		print(f"7 => {note_length}")
-		if note_length == (1/7):
+		# if note_length == (1/7):
+		if  math.isclose(note_length, (1/7)):
 			dur = duration.Duration(type='16th')
-		elif note_length == (2/7):
+		# elif note_length == (2/7):
+		elif math.isclose(note_length, (2/7)):
 			dur = duration.Duration(type='eighth')
-		elif note_length == (3/7):
+		# elif note_length == (3/7):
+		elif math.isclose(note_length, (3/7)):
 			dur = duration.Duration(type='eighth', dots=1)
-		elif note_length == (4/7):
+		# elif note_length == (4/7):
+		elif math.isclose(note_length, (4/7)):
 			dur = duration.Duration(type='quarter')
-		elif note_length == (5/7):
+		#elif note_length == (5/7):
+		elif math.isclose(note_length, (5/7)):
 			# FIX - ADD TIE -  X X X X X
 			# Should be quarter + 16th
 			dur = duration.Duration(type='quarter')
-		elif note_length == (6/7):
+		# elif note_length == (6/7):
+		elif math.isclose(note_length, (6/7)):
 			print("NAH")
 			dur = duration.Duration(type='quarter', dots=1)
 		dur.appendTuplet(duration.Tuplet(7,4, '16th'))
@@ -156,9 +162,6 @@ def get_note_duration(note_length, denom):
 			dur = duration.Duration(type='quarter')
 		dur.appendTuplet(duration.Tuplet(9,8, '32nd'))
 
-
-	# duration = duration.Duration(type='eighth', dots=1)
-	# duration.appendTuplet(duration.Tuplet(7,4, '16th'))
 	return dur
 
 

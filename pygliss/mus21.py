@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from pygliss.note import Note
-from music21 import pitch, corpus, midi, stream, tempo, duration, note as m21note
+from music21 import pitch, corpus, midi, stream, tempo, duration, note as m21note, tie
 
 
 def get_mus21_pitch(note):
@@ -109,6 +109,7 @@ def get_note_duration(pitch, note_length, denom):
 			note1 = m21note.Note(pitch)
 			note1.duration = duration.Duration(type='eighth', dots=1)
 			note1.duration.appendTuplet(duration.Tuplet(6,4, '16th'))
+			note1.tie = tie.Tie('start')
 			note2 = m21note.Note(pitch)
 			note2.duration = duration.Duration(type='eighth')
 			note2.duration.appendTuplet(duration.Tuplet(6,4, '16th'))
@@ -129,6 +130,7 @@ def get_note_duration(pitch, note_length, denom):
 			note1 = m21note.Note(pitch)
 			note1.duration = duration.Duration(type='eighth', dots=1)
 			note1.duration.appendTuplet(duration.Tuplet(7,4, '16th'))
+			note1.tie = tie.Tie('start')
 			note2 = m21note.Note(pitch)
 			note2.duration = duration.Duration(type='eighth')
 			note2.duration.appendTuplet(duration.Tuplet(7,4, '16th'))
@@ -151,6 +153,7 @@ def get_note_duration(pitch, note_length, denom):
 			note1 = m21note.Note(pitch)
 			note1.duration = duration.Duration(type='16th', dots=1)
 			note1.duration.appendTuplet(duration.Tuplet(9,8, '32nd'))
+			note1.tie = tie.Tie('start')
 			note2 = m21note.Note(pitch)
 			note2.duration = duration.Duration(type='16th')
 			note2.duration.appendTuplet(duration.Tuplet(9,8, '32nd'))
@@ -203,22 +206,35 @@ def build_note_sequence(gliss, longest, length=0.25):
 				else:
 					first_length, _ = get_note_length(1-prev)
 					first_notes = get_note_duration(pitch, first_length, denom)
-					for n in first_notes:
+					for i, n in enumerate(first_notes):
+						# if i == 0:
+						# 	n.tie = tie.Tie('start')
+						n.tie = tie.Tie('start')
 						part.append(n)
 					
 					# check for middle note
 					middle_length = (note_length - first_length) // 1
-					if middle_length > 0:
-						middle_note = m21note.Note(pitch, quarterLength=middle_length)
-						part.append(middle_note)
-					
-					# end note
 					end_length = (note_length - middle_length - first_length)
 					if math.isclose(end_length, 0) or end_length < 0:
 						end_length = 0
+
+					if middle_length > 0:
+						middle_note = m21note.Note(pitch, quarterLength=middle_length)
+						if end_length == 0:
+							middle_note.tie = tie.Tie('stop')
+						else:
+							middle_note.tie = tie.Tie('start')
+						part.append(middle_note)
+					
+					# end note
+					# end_length = (note_length - middle_length - first_length)
+					# if math.isclose(end_length, 0) or end_length < 0:
+					# 	end_length = 0
 					if end_length != 0:
 						end_notes = get_note_duration(pitch, end_length, denom)
-						for n in end_notes:
+						for i, n in enumerate(end_notes):
+							if i == 1:
+								n.tie = tie.Tie('stop')
 							part.append(n)
 					prev = end_length
 
@@ -233,10 +249,12 @@ def build_note_sequence(gliss, longest, length=0.25):
 					first_length = note_length // 1
 					if first_length > 0:
 						first_note = m21note.Note(pitch, quarterLength=first_length)
+						first_note.tie = tie.Tie('start')
 						part.append(first_note)
 					end_length = (note_length - first_length)
 					end_notes = get_note_duration(pitch, end_length, denom)
 					for n in end_notes:
+						n.tie = tie.Tie('stop')
 						part.append(n)
 					prev = end_length
 	return part

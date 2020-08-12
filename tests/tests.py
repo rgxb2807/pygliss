@@ -274,6 +274,25 @@ class TestMus21Methods(unittest.TestCase):
 
 		self.assertEqual(pygliss.mus21.write_stream(s, "testing_file_ratio_2"), True)
 
+	def test_gliss_ratio_3(self):
+		g1 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 5),
+			pygliss.note.Note('C', 4)
+			)
+		g2 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 4),
+			pygliss.note.Note('D', 4, "+")
+			)
+
+		g3 = pygliss.gliss.Gliss(
+			pygliss.note.Note('C', 3),
+			pygliss.note.Note('C', 5)
+			)
+
+		s  = pygliss.mus21.gliss_ratio([g1, g2, g3])
+
+		self.assertEqual(pygliss.mus21.write_stream(s, "testing_file_ratio_3"), True)
+
 	# def test_playbach(self):
 	# 	self.assertEqual(pygliss.mus21.playbach(), True)
 	def test_dur(self):

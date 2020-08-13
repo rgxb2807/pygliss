@@ -218,6 +218,7 @@ def build_note_sequence(gliss, longest, length=0.25):
 					if math.isclose(end_length, 0) or end_length < 0:
 						end_length = 0
 
+					# middle note
 					if middle_length > 0:
 						middle_note = m21note.Note(pitch, quarterLength=middle_length)
 						if end_length == 0:
@@ -227,9 +228,6 @@ def build_note_sequence(gliss, longest, length=0.25):
 						part.append(middle_note)
 					
 					# end note
-					# end_length = (note_length - middle_length - first_length)
-					# if math.isclose(end_length, 0) or end_length < 0:
-					# 	end_length = 0
 					if end_length != 0:
 						end_notes = get_note_duration(pitch, end_length, denom)
 						for i, n in enumerate(end_notes):

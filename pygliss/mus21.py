@@ -31,17 +31,34 @@ def playbach():
 	return True
 
 
-def comp_stream(comp, bpm=60, length=0.25):
-	"""."""
-	parts = [stream.Part() for i in range(len(comp.chords[0].notes))]
+
+def chord_stream(chords, bpm=60, length=0.25):
+	parts = [stream.Part() for i in range(len(chords[0].notes))]
 	parts.append(tempo.MetronomeMark(number=bpm))
-	for chord in comp.all_chords:
+	for chord in chords:
 		for idx, note in enumerate(chord.notes):
 			parts[idx].append(m21note.Note(get_mus21_pitch(note), 
 				quarterLength=length))
 	
 	s = stream.Stream(parts)
 	return s
+
+
+def comp_stream(comp, bpm=60, length=0.25, all=False):
+	"""."""
+	parts = [stream.Part() for i in range(len(comp.chords[0].notes))]
+	parts.append(tempo.MetronomeMark(number=bpm))
+
+	chords = None
+	if all:
+		chords = comp.all_chords
+	else:
+		chords = comp.chords
+
+	s = chord_stream(chords, bpm=bpm, length=length)
+	return s
+
+
 
 def get_note_length(ratio):
 	lengths = [1,2,3,4,5,6,7,8,9]
@@ -88,6 +105,7 @@ def get_note_duration(pitch, note_length, denom):
 		if math.isclose(note_length, (1/5)):
 			dur = duration.Duration(type='16th')
 		elif math.isclose(note_length, (2/5)):
+			print("here")
 			dur = duration.Duration(type='eighth')
 		elif math.isclose(note_length, (3/5)):
 			dur = duration.Duration(type='eighth', dots=1)
@@ -167,6 +185,10 @@ def get_note_duration(pitch, note_length, denom):
 		dur.appendTuplet(duration.Tuplet(9,8, '32nd'))
 	
 	note = m21note.Note(pitch)
+	if dur is None:
+		print(f"NOTE_LENGTH:{note_length} DENOM:{denom}")
+		print("------")
+		print()
 	note.duration = dur
 	return [note]
 
@@ -187,9 +209,12 @@ def build_note_sequence(gliss, longest, length=0.25):
 	for i, note in enumerate(gliss.notes):
 		pitch = get_mus21_pitch(note)
 		# check if note length is a tuple 
-		if note_length % (length / 4) == 0:	
+		# if note_length % (length / 4) == 0:
+		if denom % 2 == 0 or note_length % (length / 4) == 0:
 			note = m21note.Note(pitch, quarterLength=note_length)
 			part.append(note)
+
+		# tuplets
 		else:
 			#if tied from previous note
 			if prev > 0:

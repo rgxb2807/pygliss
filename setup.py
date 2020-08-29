@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pygliss", # Replace with your own username
-    version="0.0.2",
+    version="0.0.5",
     author="Ryan Beppel",
     author_email="ryan.beppel@gmail.com",
     description="Glissandi Relations Calculator",
@@ -13,10 +13,16 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/rgxb2807/pygliss",
     packages=setuptools.find_packages(),
+    install_requires=[
+          'music21',
+          'pygame',
+          'scipy',
+          
+      ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.6',
 )

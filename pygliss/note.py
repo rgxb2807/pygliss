@@ -193,11 +193,11 @@ def next_qtr_note(the_note):
 			return Note(NOTE_NAMES[idx + 1], octave)
 
 	elif accidental == '-':
-		return None
+		return Note(note, octave)
 	elif accidental == 'b':
-		return None
+		return Note(note, octave, '-')
 	elif accidental == '--':
-		return None
+		return Note(note, octave, 'b')
 	else:
 	    return None
 

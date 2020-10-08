@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pygliss", # Replace with your own username
-    version="0.0.5",
+    version="0.0.6",
     author="Ryan Beppel",
     author_email="ryan.beppel@gmail.com",
     description="Glissandi Relations Calculator",

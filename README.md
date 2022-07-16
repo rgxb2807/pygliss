@@ -51,28 +51,6 @@ The goal of this program is to allow the user to calculate these structures quic
 - [Schwartz: Music for Orchestra](https://www.youtube.com/watch?v=WuogXAgt2u4)
 
 
-## Getting Started
-- Clone the repository. 
-- Create at least two gliddandi objects and use the GlissCmpr object to create a comparison. 
-
-
-## Class List
-
-### note.py
-Notes are divided into 24 steps rather than 12 to allow a quarter tone equally tempered scale
-
-
-### chord.py
-Accepts Arrays of Notes as an argument
-
-
-### gliss.py
-Accepts a start note and an end note as arguments.  Creates an array of notes with quarter note resolution between the two notes
-
-### gliss_cmpr.py
-Takes a variable number of glissandi as arguments and calculates the chordal relationship between them.
-
-
 ## Authors
 
 * **Ryan Beppel** - *Initial work* - [rgxb2807](https://github.com/rgxb2807)

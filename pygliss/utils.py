@@ -1,10 +1,13 @@
+import numpy as np
+from collections import OrderedDict
+from pygliss.constants import DIVISIONS, BASE, A440, LOW, HIGH
+
 #Euclid's Algorithm via StackOverFlow
 def the_gcd(a, b):
 	while (b > 0):
 		temp = b
 		b = a % b
 		a = temp
-
 	return a
 
 def gcd(*args):
@@ -22,3 +25,40 @@ def lcm(num_list):
 	for i in range(0, len(num_list)):
 		result = the_lcm(result, num_list[i])
 	return result
+
+
+
+def make_freq_to_steps_map():
+    freq_map = OrderedDict()
+    freq = A_440
+    count = 0 
+    
+    # find lowest note
+    while freq > LOW:
+        count -= 1
+        freq = A_440 * (2 ** (count/DIVISIONS))        
+    
+    #build map
+    while freq < HIGH:
+        freq = A_440 * (2 ** (count/DIVISIONS))
+        freq_map[freq] = count
+        count += 1
+        
+    return freq_map
+
+def make_freq_vector():
+    freqs = []
+    freq = A_440
+    count = 0 
+    
+    # find lowest note
+    while freq > LOW:
+        count -= 1
+        freq = A_440 * (2 ** (count/DIVISIONS))
+
+    while freq < HIGH:
+        freq = A_440 * (2 ** (count/DIVISIONS))
+        freqs.append(freq)
+        count += 1
+
+    return np.array(freqs)

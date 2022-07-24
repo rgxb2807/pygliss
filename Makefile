@@ -17,4 +17,3 @@ test_gliss_cmpr:
 
 test_music21:
 	python -m unittest tests/music21_tests.py
-

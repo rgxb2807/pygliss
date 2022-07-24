@@ -30,17 +30,17 @@ def lcm(num_list):
 
 def make_freq_to_steps_map():
     freq_map = OrderedDict()
-    freq = A_440
+    freq = A440
     count = 0 
     
     # find lowest note
     while freq > LOW:
         count -= 1
-        freq = A_440 * (2 ** (count/DIVISIONS))        
+        freq = A440 * (2 ** (count/DIVISIONS))        
     
     #build map
     while freq < HIGH:
-        freq = A_440 * (2 ** (count/DIVISIONS))
+        freq = A440 * (2 ** (count/DIVISIONS))
         freq_map[freq] = count
         count += 1
         
@@ -48,17 +48,27 @@ def make_freq_to_steps_map():
 
 def make_freq_vector():
     freqs = []
-    freq = A_440
+    freq = A440
     count = 0 
     
     # find lowest note
     while freq > LOW:
         count -= 1
-        freq = A_440 * (2 ** (count/DIVISIONS))
+        freq = A440 * (2 ** (count/DIVISIONS))
 
     while freq < HIGH:
-        freq = A_440 * (2 ** (count/DIVISIONS))
+        freq = A440 * (2 ** (count/DIVISIONS))
         freqs.append(freq)
         count += 1
 
     return np.array(freqs)
+
+
+def find_note_vector_position(note_frequency):
+    return (np.abs(NOTE_VECTOR - note_frequency)).argmin()
+
+
+def find_closest_frequency(note_frequency):
+    return NOTE_VECTOR[(np.abs(NOTE_VECTOR - note_frequency)).argmin()]
+
+find_note_vector_position_vectorized = np.vectorize(find_note_vector_position)

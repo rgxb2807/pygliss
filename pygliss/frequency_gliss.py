@@ -1,9 +1,9 @@
 import numpy as np
 from collections import OrderedDict
-from pygliss.utils import make_freq_vector, make_freq_to_steps_map
-
+from pygliss.utils import make_freq_vector, make_freq_to_steps_map, find_note_vector_position_vectorized
 
 NOTE_VECTOR = make_freq_vector()
+
 
 def calc_gliss(start, end):
     """
@@ -22,8 +22,9 @@ def calc_gliss(start, end):
     low = start if start <= end else end
     
     # Filter note vector by High And low 
-    notes = NOTE_VECTOR[NOTE_VECTOR >= low]
-    notes = notes[notes <= high]
+    low_idx = (np.abs(NOTE_VECTOR - low)).argmin()
+    high_idx = (np.abs(NOTE_VECTOR - high)).argmin()
+    notes = NOTE_VECTOR[low_idx:high_idx]
     
     # Reverse order of list if gliss descends
     if start > end:
@@ -99,4 +100,48 @@ def approximate_note_durations(durations, beats, subdivisons=4):
     """
     if np.all(durations):
         return approximate_equal_note_durations(durations, beats, subdivisons)
+
+
+def vectorized_nearest_ot(chord, m):
+    """
+    A vectorized implementation of finding the nearest overtone chord extended from
+    Terhardt's subCoincidence algorithm for calculating virtual pitch
+    
+    m is the number of subharmonics considered
+    """
+    chord_steps = find_note_vector_position_vectorized(chord)
+    no_notes = len(chord)
+    # generate all possible overtone chords
+    all_chord_sets = np.ones((no_notes, m, no_notes))
+    for i in range(no_notes):
+        subharmonics = chord[i] * (1 / np.arange(1, m + 1))
+        # filter values lower than human hearing
+        subharmonics = np.where(subharmonics >= MIN_LOW, subharmonics, -1)
+        harmonics = np.rint(chord / subharmonics[:,np.newaxis])
+        chords = harmonics * subharmonics[:, np.newaxis]
+        all_chord_sets[i] = chords
+        
+    # convert frequencies to nearest step of temperment set in `DIVISIONS`
+    all_chord_steps = find_note_vector_position_vectorized(all_chord_sets)
+    
+    # right now we'll do pure summing, but you may want to consider
+    # different methods, what if all notes were exact but one was way off.
+    # another chord might have a bunch of tones that are close, but the distance
+    # is a little bit more
+    diff_from_target_chord = np.sum(np.abs(all_chord_steps - chord_steps), axis=2)
+    
+    #find the chord with least number of steps and the lowest subharmonic
+    lowest_subharmonic, lowest_no_steps, idx = np.inf, np.inf, 0
+    for i, row in enumerate(diff_from_target_chord):
+        min_idx = np.argmin(row)
+        if row[min_idx] < lowest_no_steps:
+            lowest_no_steps = row[min_idx]
+            lowest_subharmonic = min_idx
+            idx = i
+        elif row[min_idx] == lowest_no_steps and min_idx < lowest_subharmonic:
+            lowest_no_steps = row[min_idx]
+            lowest_subharmonic = min_idx
+            idx = i
+
+    return all_chord_sets[idx, lowest_subharmonic]
 

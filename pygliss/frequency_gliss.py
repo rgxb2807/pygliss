@@ -102,13 +102,40 @@ def approximate_note_durations(durations, beats, subdivisons=4):
         return approximate_equal_note_durations(durations, beats, subdivisons)
 
 
-def vectorized_nearest_ot(chord, m):
+
+def tiebreak_chord(chord, minimum_values_idx, tiebreak=None):
+	"""
+	Breaks a tie when multiple target chords have the same number of steps from
+	the original chord and the subharmonics are the same
+
+	The default is to choose the subharmonic who is derived from the lowest note 
+	in the chord.
+
+	set tiebreak to `highest` and the subhamonic is derived from the highest 
+	note in the chord is chosen
+
+	"""
+    row_idx, chord_idx = 0,0
+    if tiebreak =="highest":
+        row_idx = minimum_values_idx[np.argmax(chord[minimum_values_idx])]
+        chord_idx = min_subharm_idx[row_idx]
+    else:
+        row_idx = minimum_values_idx[np.argmin(chord[minimum_values_idx])]
+        chord_idx = min_subharm_idx[row_idx]
+    return row_idx, chord_idx
+
+
+def vectorized_nearest_ot(chord, m, tiebreak=None):
     """
-    A vectorized implementation of finding the nearest overtone chord extended from
-    Terhardt's subCoincidence algorithm for calculating virtual pitch
+    A vectorized implementation of finding the nearest overtone chord extended 
+    fromTerhardt's subCoincidence algorithm for calculating virtual pitch
     
     m is the number of subharmonics considered
+    
+    tiebreak defaults to selecting the lowest note to generate from an  overtone 
+    chord. Enter `highest` to choose which tied chords are selected
     """
+
     chord_steps = find_note_vector_position_vectorized(chord)
     no_notes = len(chord)
     # generate all possible overtone chords
@@ -130,18 +157,29 @@ def vectorized_nearest_ot(chord, m):
     # is a little bit more
     diff_from_target_chord = np.sum(np.abs(all_chord_steps - chord_steps), axis=2)
     
-    #find the chord with least number of steps and the lowest subharmonic
-    lowest_subharmonic, lowest_no_steps, idx = np.inf, np.inf, 0
-    for i, row in enumerate(diff_from_target_chord):
-        min_idx = np.argmin(row)
-        if row[min_idx] < lowest_no_steps:
-            lowest_no_steps = row[min_idx]
-            lowest_subharmonic = min_idx
-            idx = i
-        elif row[min_idx] == lowest_no_steps and min_idx < lowest_subharmonic:
-            lowest_no_steps = row[min_idx]
-            lowest_subharmonic = min_idx
-            idx = i
+    ## find the chord with least number of steps and the lowest subharmonic
+    # get the idx of the minimum number of steps of the subharmonics for each 
+    # note of the input chord
+    min_subharm_idx = np.argmin(diff_from_target_chord, axis=1)
+    min_subharm_values = np.take_along_axis(diff_from_target_chord, 
+    	min_subharm_idx[:, np.newaxis], axis=1).T[0]
 
-    return all_chord_sets[idx, lowest_subharmonic]
+    #find the minimum of every chord
+    minimum_values_idx = np.argwhere(min_subharm_values == np.amin(
+    	min_subharm_values)).T[0]
+
+    row_idx, chord_idx = 0, 0
+    if minimum_values_idx.size == 1: # if only 1 value exists
+        row_idx = minimum_values_idx[0]
+        chord_idx = min_subharm_idx[row_idx]
+    else:
+        # take value with lower subharmonic
+        # tiebreak - both have same subharmonic value, choose lowest default
+        if np.all(min_subharm_idx[minimum_values_idx]):
+            row_idx, chord_idx = tiebreak_chord(chord, minimum_values_idx, tiebreak)
+                
+        row_idx = np.min(min_subharm_idx[minimum_values_idx])
+        chord_idx = min_subharm_idx[row_idx]
+    
+    return all_chord_sets[row_idx, chord_idx]
 

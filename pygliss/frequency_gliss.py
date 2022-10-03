@@ -104,17 +104,17 @@ def approximate_note_durations(durations, beats, subdivisons=4):
 
 
 def tiebreak_chord(chord, minimum_values_idx, tiebreak=None):
-	"""
-	Breaks a tie when multiple target chords have the same number of steps from
-	the original chord and the subharmonics are the same
+    """
+    Breaks a tie when multiple target chords have the same number of steps from
+    the original chord and the subharmonics are the same
 
-	The default is to choose the subharmonic who is derived from the lowest note 
-	in the chord.
+    The default is to choose the subharmonic who is derived from the lowest note 
+    in the chord.
 
-	set tiebreak to `highest` and the subhamonic is derived from the highest 
-	note in the chord is chosen
+    set tiebreak to `highest` and the subhamonic is derived from the highest 
+    note in the chord is chosen
 
-	"""
+    """
     row_idx, chord_idx = 0,0
     if tiebreak =="highest":
         row_idx = minimum_values_idx[np.argmax(chord[minimum_values_idx])]
@@ -183,3 +183,206 @@ def vectorized_nearest_ot(chord, m, tiebreak=None):
     
     return all_chord_sets[row_idx, chord_idx]
 
+
+##### Nearest FM Chords
+
+
+# chord 1 - fm chord - A carrier, mod 110
+# chord 2 - fm chord C carrier, mod 110
+# chord 3 - modified chord 1 - diff distorted by 1 quarter tone
+# chord 4 - modified chord 2 - both distorted
+
+test_chords = np.array([
+    [110.0, 220.0,  330.0],
+    [151.6255653, 261.6255653,  371.6255653],
+    [113.22324603, 220.0,  330.0],
+    [146.83238396, 261.6255653,  380.83608684],
+])
+
+
+NOTE_VECTOR = make_freq_vector()
+TRUNC_BEG = None
+TRUNC_END = None
+NOTE_VECTOR = NOTE_VECTOR[TRUNC_BEG:TRUNC_END]
+
+MAX_SIDEBANDS = 20
+freq_modulators = np.outer(np.arange(1, MAX_SIDEBANDS+1), NOTE_VECTOR)
+SUM_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
+DIFF_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
+FM_CHORDS = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS * 2, len(NOTE_VECTOR)))
+FM_CHORDS_W_CARRIER = np.zeros((len(NOTE_VECTOR), ((MAX_SIDEBANDS * 2) + 1), len(NOTE_VECTOR)))
+
+for i in range(len(NOTE_VECTOR)):
+    SUM_TONES[i] = NOTE_VECTOR[i] + freq_modulators
+    DIFF_TONES[i] = np.abs(NOTE_VECTOR[i] - freq_modulators)
+    FM_CHORDS[i] = np.vstack((SUM_TONES[i], DIFF_TONES[i]))
+    carrier = np.ones(len(NOTE_VECTOR)) * NOTE_VECTOR[i]
+    FM_CHORDS_W_CARRIER[i] = np.vstack((FM_CHORDS[i], carrier))
+
+
+FM_CHORDS_STEPS = find_note_vector_position_vectorized(FM_CHORDS, TRUNC_BEG, TRUNC_END)
+FM_CHORDS_W_CARRIER_STEPS = find_note_vector_position_vectorized(FM_CHORDS_W_CARRIER, TRUNC_BEG, TRUNC_END)
+
+
+
+
+def closet_fm_chord(chord):
+    """
+    find the closest FM chord to the input chord 
+    when a tie is found give priority to the carrier of the found chord 
+    that is closest to the lowest note of the input chord
+    """
+    
+    chord_steps = np.sort(find_note_vector_position_vectorized(chord, TRUNC_BEG, TRUNC_END))
+    solutions = []
+    min_steps, best_i,best_j, best_carrier, best_mod = float("+inf"), 0, 0, 0.0, 0.0
+    for i in range(len(NOTE_VECTOR)):
+        cur_carrier = NOTE_VECTOR[i]
+        for j in range(len(NOTE_VECTOR)):
+            cur_mod = NOTE_VECTOR[j]
+            current_fm_chord = FM_CHORDS[i,:,j]
+            current_fm_chord_steps = find_note_vector_position_vectorized(current_fm_chord, TRUNC_BEG, TRUNC_END)
+            #add carrier
+            current_fm_chord_steps = np.append(current_fm_chord_steps, i)
+            temp_min_steps = 0
+            
+            # find closet note in each chord
+            for k in range(len(chord_steps)):
+                # for each not of the input chord, find the closet
+                # tone in the current FM chord
+                min_note_dist = np.abs(current_fm_chord_steps - chord_steps[k]).min()
+                temp_min_steps += min_note_dist
+
+            if temp_min_steps < min_steps:
+                min_steps = temp_min_steps
+                best_i, best_j = i,j
+                best_carrier = NOTE_VECTOR[i]
+                best_mod = NOTE_VECTOR[j]
+                solutions = [{
+                    "min_steps":min_steps,
+                    "carrier":best_carrier,
+                    "modulator":best_mod,
+                    "i":i,
+                    "j":j
+                }]
+                
+                
+            # prioritize carrier closest to lowest note in chord
+            elif temp_min_steps == min_steps:
+                min_steps = temp_min_steps
+                best_i, best_j = i,j
+                best_carrier = NOTE_VECTOR[i]
+                best_mod = NOTE_VECTOR[j]
+                solutions.append({
+                    "min_steps":min_steps,
+                    "carrier":NOTE_VECTOR[i],
+                    "modulator":cur_mod,
+                    "i":i,
+                    "j":j
+                })
+    return solutions
+
+
+def verify_solutions(chord, solutions):
+    chord = np.sort(chord)
+    for idx, solution in enumerate(solutions):
+        print(f"solution {idx+1}")
+        print(solution)
+        found_chord = FM_CHORDS[solution['i'],:,solution['j']]
+        print(chord)
+        print(found_chord, NOTE_VECTOR[solution['i']])
+        print()
+        chord_steps = find_note_vector_position_vectorized(chord, TRUNC_BEG, TRUNC_END)
+        print(chord_steps)
+        found_chord_steps = np.append(FM_CHORDS_STEPS[solution['i'],:,solution['j']], solution['i'])
+        print(found_chord_steps)
+        print()
+        intersection = np.intersect1d(chord_steps, found_chord_steps)
+        print(f"intersection:{intersection}")
+        
+        diff = len(chord) - len(intersection)
+        if diff == solution['min_steps']:
+            print(f"==> Solution verified <==")
+        else:
+            print("**** INCORRECT Solution ****")
+        print("----\n")
+
+
+def get_chord_distance(chord1, chord2):
+    """
+    Find Min distance between two chords (chord be stepwise or frequency)
+    notes should be able to doublecount, thus why the vectorized implementation is more difficult
+    
+    """
+    smaller, larger, dist = chord1, chord2, 0
+    if len(chord1) > len(chord2):
+        smaller = chord2
+        larger = chord1
+        
+    for i in range(len(smaller)):
+        dist += np.abs(larger - smaller[i]).min()
+    return dist
+
+
+
+def closet_fm_chord_vectorized(chord):
+    """
+    find the closest FM chord to the input chord 
+    when a tie is found give priority to the carrier of the found chord 
+    that is closest to the lowest note of the input chord
+    """
+    chord_steps = np.sort(find_note_vector_position_vectorized(chord, TRUNC_BEG, TRUNC_END))
+    min_steps, candidates = float("+inf"), set()
+    solutions = []
+    
+    #find minimium stepwise distance of each chord note to all FM CHORDS
+    for i in range(len(chord_steps)):
+        diff = np.abs(FM_CHORDS_W_CARRIER_STEPS - chord_steps[i])
+        min_diff = np.where(diff == diff.min())
+        #add candidate chords to set
+        for idx in range(len(min_diff[0])):
+            candidates.add((min_diff[0][idx], min_diff[2][idx]))
+    
+    #find minimium stepwise distance of each candidate chord to original chord
+    for candidate in candidates:
+        fm_chord = FM_CHORDS_W_CARRIER_STEPS[candidate[0],:,candidate[1]]
+        dist = get_chord_distance(chord_steps, fm_chord)
+        if dist < min_steps:
+            min_steps = dist
+            solutions = [{
+                "min_steps":min_steps,
+                "carrier":NOTE_VECTOR[candidate[0]],
+                "modulator":NOTE_VECTOR[candidate[1]],
+                "i":candidate[0],
+                "j":candidate[1]
+            }]
+        elif dist == min_steps:
+            solutions.append({
+                "min_steps":min_steps,
+                "carrier":NOTE_VECTOR[candidate[0]],
+                "modulator":NOTE_VECTOR[candidate[1]],
+                "i":candidate[0],
+                "j":candidate[1]
+            })
+
+    return solutions
+
+
+# testing - nearest FM
+start = time.time()
+# closet_fm_chord(chords[:,10])
+test_idx = 0
+solutions = closet_fm_chord(test_chords[test_idx])
+print(len(solutions))
+verify_solutions(test_chords[test_idx], solutions)
+print(time.time() - start)
+
+
+
+start = time.time()
+# closet_fm_chord_vectorized(chords[:,10])
+# test_idx = 0
+solutions_v = closet_fm_chord_vectorized(test_chords[test_idx])
+print(len(solutions_v))
+verify_solutions(test_chords[test_idx], solutions_v)
+print(time.time() - start)

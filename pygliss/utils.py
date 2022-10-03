@@ -58,17 +58,31 @@ def make_freq_vector():
 
     while freq < HIGH:
         freq = A440 * (2 ** (count/DIVISIONS))
-        freqs.append(freq)
+        freqs.append(np.float64(freq))
         count += 1
 
     return np.array(freqs)
 
+NOTE_VECTOR = make_freq_vector()
+def find_note_vector_position(note_frequency, trunc_beg=None, trunc_end=None):
+    """
+    Finds note position of a given frequency or array of frequencies
 
-def find_note_vector_position(note_frequency):
-    return (np.abs(NOTE_VECTOR - note_frequency)).argmin()
+    Truncate note array from the begging or end by setting optional arguments
+
+    """
+    note_vector = NOTE_VECTOR
+    if trunc_beg:
+        note_vector = note_vector[trunc_beg:]
+    if trunc_end:
+        note_vector = note_vector[:trunc_end]
+
+    note_positions = (np.abs(note_vector - note_frequency)).argmin()
+    note_positions = np.where(note_positions == 0, -999999, note_positions)
+    return note_positions
 
 
-def find_closest_frequency(note_frequency):
-    return NOTE_VECTOR[(np.abs(NOTE_VECTOR - note_frequency)).argmin()]
+def find_closest_frequency(note_frequency, note_vector=NOTE_VECTOR):
+    return note_vector[(np.abs(note_vector - note_frequency)).argmin()]
 
 find_note_vector_position_vectorized = np.vectorize(find_note_vector_position)

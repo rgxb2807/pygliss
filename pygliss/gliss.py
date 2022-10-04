@@ -1,9 +1,9 @@
 
 from pygliss.sequence import NoteSequence
 from pygliss.utils import NOTE_VECTOR, NOTE_VECTOR_12
+
 import numpy as np
 
-SELF_INIT = True
 
 class Gliss(NoteSequence):
 	"""
@@ -44,10 +44,8 @@ class Gliss(NoteSequence):
 				the starting note of the gliss
 			end : numpy.float64
 				the end note of the gliss
-			self_init : bool
-				defaults to True, if false is set, user will have to call 
-				`calc_gliss` to instaniate the parent class `NoteSequence` and 
-				for `length` and `ascend` attributes
+			resolution : numpy.int
+				how wide the intervals are - 1 represents 1/4 tone
 		"""
 
 		self.start = start
@@ -69,7 +67,6 @@ class Gliss(NoteSequence):
 		    A glissando is an exponential pitch function of equal tempered notes in 
 		    time. Each step increaeses NOTE * 2 **1/DIVISIONS
 
-		    TODO - Implement Resolution other than 1
 
 		    Parameters
 		    ----------
@@ -96,6 +93,7 @@ class Gliss(NoteSequence):
 		    
 		    # Reverse order of list if gliss descends
 		    if start > end:
+		        notes = note_vector[low_idx+1:high_idx+1]
 		        notes = notes[::-1]
 		        self.ascend = False
 		    else:

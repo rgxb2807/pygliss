@@ -46,7 +46,7 @@ def make_freq_to_steps_map():
         
     return freq_map
 
-def make_freq_vector():
+def make_freq_vector(divisions=1):
     freqs = []
     freq = A440
     count = 0 
@@ -54,16 +54,18 @@ def make_freq_vector():
     # find lowest note
     while freq > LOW:
         count -= 1
-        freq = A440 * (2 ** (count/DIVISIONS))
+        freq = A440 * (2 ** (count/divisions))
 
     while freq < HIGH:
-        freq = A440 * (2 ** (count/DIVISIONS))
+        freq = A440 * (2 ** (count/divisions))
         freqs.append(np.float64(freq))
         count += 1
 
     return np.array(freqs)
 
-NOTE_VECTOR = make_freq_vector()
+NOTE_VECTOR = make_freq_vector(DIVISIONS)
+NOTE_VECTOR_12 = make_freq_vector(12)
+
 def find_note_vector_position(note_frequency, trunc_beg=None, trunc_end=None):
     """
     Finds note position of a given frequency or array of frequencies

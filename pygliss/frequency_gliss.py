@@ -1,9 +1,10 @@
 import numpy as np
 from collections import OrderedDict
 from pygliss.utils import make_freq_vector, make_freq_to_steps_map, find_note_vector_position_vectorized
+import time
 
 NOTE_VECTOR = make_freq_vector()
-
+MIN_LOW = 16.3515978313
 
 def calc_gliss(start, end):
     """
@@ -325,19 +326,29 @@ def get_chord_distance(chord1, chord2):
 
 
 
-def closet_fm_chord_vectorized(chord):
+def closet_fm_chord_vectorized(chord, sidebands=None):
     """
     find the closest FM chord to the input chord 
     when a tie is found give priority to the carrier of the found chord 
     that is closest to the lowest note of the input chord
     """
+    fm_chords_steps_w_carrier = None
+    if not sidebands:
+        fm_chords_steps_w_carrier = FM_CHORDS_W_CARRIER_STEPS
+    elif sidebands < MAX_SIDEBANDS:
+        sum_tones = FM_CHORDS_W_CARRIER_STEPS[:,:sidebands,:]
+        diff_tones = FM_CHORDS_W_CARRIER_STEPS[:,:sidebands,:]
+        carrier = FM_CHORDS_W_CARRIER_STEPS[:,MAX_SIDEBANDS * 2:,:]
+        temp = np.hstack((sum_tones, diff_tones))
+        fm_chords_steps_w_carrier = np.hstack((temp, carrier))
+
     chord_steps = np.sort(find_note_vector_position_vectorized(chord, TRUNC_BEG, TRUNC_END))
     min_steps, candidates = float("+inf"), set()
     solutions = []
     
     #find minimium stepwise distance of each chord note to all FM CHORDS
     for i in range(len(chord_steps)):
-        diff = np.abs(FM_CHORDS_W_CARRIER_STEPS - chord_steps[i])
+        diff = np.abs(fm_chords_steps_w_carrier - chord_steps[i])
         min_diff = np.where(diff == diff.min())
         #add candidate chords to set
         for idx in range(len(min_diff[0])):
@@ -345,7 +356,7 @@ def closet_fm_chord_vectorized(chord):
     
     #find minimium stepwise distance of each candidate chord to original chord
     for candidate in candidates:
-        fm_chord = FM_CHORDS_W_CARRIER_STEPS[candidate[0],:,candidate[1]]
+        fm_chord = fm_chords_steps_w_carrier[candidate[0],:,candidate[1]]
         dist = get_chord_distance(chord_steps, fm_chord)
         if dist < min_steps:
             min_steps = dist
@@ -365,24 +376,24 @@ def closet_fm_chord_vectorized(chord):
                 "j":candidate[1]
             })
 
-    return solutions
+    return sorted(solutions, key=lambda x: (x['carrier'], x['modulator']))
 
 
-# testing - nearest FM
-start = time.time()
-# closet_fm_chord(chords[:,10])
-test_idx = 0
-solutions = closet_fm_chord(test_chords[test_idx])
-print(len(solutions))
-verify_solutions(test_chords[test_idx], solutions)
-print(time.time() - start)
-
-
-
-start = time.time()
-# closet_fm_chord_vectorized(chords[:,10])
+# # testing - nearest FM
+# start = time.time()
+# # closet_fm_chord(chords[:,10])
 # test_idx = 0
-solutions_v = closet_fm_chord_vectorized(test_chords[test_idx])
-print(len(solutions_v))
-verify_solutions(test_chords[test_idx], solutions_v)
-print(time.time() - start)
+# solutions = closet_fm_chord(test_chords[test_idx])
+# print(len(solutions))
+# verify_solutions(test_chords[test_idx], solutions)
+# print(time.time() - start)
+
+
+
+# start = time.time()
+# # closet_fm_chord_vectorized(chords[:,10])
+# # test_idx = 0
+# solutions_v = closet_fm_chord_vectorized(test_chords[test_idx])
+# print(len(solutions_v))
+# verify_solutions(test_chords[test_idx], solutions_v)
+# print(time.time() - start)

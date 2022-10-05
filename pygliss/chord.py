@@ -1,5 +1,6 @@
 import numpy as np
 from pygliss.utils import find_note_vector_position_vectorized
+from pygliss.note import freq_to_note
 from pygliss.constants import LOW
 
 class Chord:
@@ -33,7 +34,6 @@ class Chord:
     """
 
     def __init__(self, notes, duration=1):
-
         """
         Contructs Chord
 
@@ -68,6 +68,9 @@ class Chord:
     def closest_note(self, note):
         return self.notes[np.abs(self.notes - note).argmin()]
 
+    def get_notes(self):
+        return [freq_to_note(self.notes[i]) for i in range(self.length)]
+
     def distance(self, in_chord):
         """
         Returns stepwise distance from self to input chord `in_chord`
@@ -94,14 +97,53 @@ class Chord:
         return dist
 
 
+class OvertoneChord(Chord):
+    """
+    A class to represent an Overtone chord
+
+    ...
+
+    Attributes
+    ----------
+        notes : numpy.ndarray[numpy.float64] 
+            the notes of the chord represented as frequency values
+        duration : numpy.float64
+            the duration of the chord
+        fundamental : numpy.float64
+            fundamental of the overtone chord
+
+
+    Methods
+    -------
+        
+
+    """
+    def __init__(self, notes, fundamental, duration=1):
+        """
+        Contructs Overtone Chord
+
+        Parameters
+        ----------
+            notes : numpy.ndarray[numpy.float64] 
+                the notes of the chord represented as frequency values
+            duration : numpy.float64
+                the end note of the gliss
+            fundamental : numpy.float64
+                fundamental of the overtone chord
+        """
+        super().__init__(notes, duration)
+        self.fundamental = fundamental
+
+    def fundamental_note(self):
+        return freq_to_note(self.fundamental)
 
 
 
 def get_chord_distance(chord1_steps, chord2_steps, doublecount=True):
     """
     Returns stepwise distance between two chords represented as numpy arrays of
-    note positions. It could also be used for arrays of frequencies but this wouldn't
-    really give chordal distance.
+    note positions. It could also be used for arrays of frequencies but this 
+    wouldn't really give chordal distance.
 
     Notes can be double counted, for every note, the closest is found
 
@@ -179,8 +221,11 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
     row_idx, chord_idx = min_diff[0][0], min_diff[1][0]
     if tiebreak == "highest":
         row_idx, chord_idx = min_diff[0][-1], min_diff[1][-1]
+
+    ot_notes = all_chord_sets[row_idx, chord_idx]
+    fundamental = chord_freq[row_idx] * (1 / (chord_idx + 1))
     
-    return all_chord_sets[row_idx, chord_idx]
+    return OvertoneChord(ot_notes, fundamental)
 
 
 

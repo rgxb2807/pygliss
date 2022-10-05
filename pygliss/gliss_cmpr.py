@@ -51,7 +51,6 @@ def make_gliss_cmpr_sequence(note_matrix):
 
     chord_sequences = []
     i_max, j_max = note_matrix.shape
-    print(i_max,j_max)
     for i in range(i_max):
         glissandi = []
         for j in range(j_max-1):

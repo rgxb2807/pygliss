@@ -93,7 +93,7 @@ class Gliss(NoteSequence):
 		    
 		    # Reverse order of list if gliss descends
 		    if start > end:
-		        notes = note_vector[low_idx+1:high_idx+1]
+		        notes = note_vector[low_idx + 1:high_idx + 1]
 		        notes = notes[::-1]
 		        self.ascend = False
 		    else:
@@ -106,14 +106,6 @@ class Gliss(NoteSequence):
 
 		# initialize parent class
 		calc_gliss(self)
-
-
-
-
-
-
-
-
 
 
 

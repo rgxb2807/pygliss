@@ -6,68 +6,68 @@ import time
 NOTE_VECTOR = make_freq_vector()
 MIN_LOW = 16.3515978313
 
-def calc_gliss(start, end):
-    """
-    Calculate gliss frequencies and when they occur 
-    with note values specified in the note_vector.  time_vals are when the note 
-    starts based on a total gliss duration of 1.
+# def calc_gliss(start, end):
+#     """
+#     Calculate gliss frequencies and when they occur 
+#     with note values specified in the note_vector.  time_vals are when the note 
+#     starts based on a total gliss duration of 1.
     
-    A glissando is an exponential pitch function of 
-    equal tempered notes in time. Each step 
-    increaeses NOTE * 2 **1/DIVISIONS
+#     A glissando is an exponential pitch function of 
+#     equal tempered notes in time. Each step 
+#     increaeses NOTE * 2 **1/DIVISIONS
     
-    Each note duration is equal 
-    """ 
-    # Find high and low notes of gliss
-    high = end if end >= start else start
-    low = start if start <= end else end
+#     Each note duration is equal 
+#     """ 
+#     # Find high and low notes of gliss
+#     high = end if end >= start else start
+#     low = start if start <= end else end
     
-    # Filter note vector by High And low 
-    low_idx = (np.abs(NOTE_VECTOR - low)).argmin()
-    high_idx = (np.abs(NOTE_VECTOR - high)).argmin()
-    notes = NOTE_VECTOR[low_idx:high_idx]
+#     # Filter note vector by High And low 
+#     low_idx = (np.abs(NOTE_VECTOR - low)).argmin()
+#     high_idx = (np.abs(NOTE_VECTOR - high)).argmin()
+#     notes = NOTE_VECTOR[low_idx:high_idx]
     
-    # Reverse order of list if gliss descends
-    if start > end:
-        notes = notes[::-1]
+#     # Reverse order of list if gliss descends
+#     if start > end:
+#         notes = notes[::-1]
         
-    time_val = (1 /  len(notes)) * np.arange(0, len(notes))
-    durations = (1 /  len(notes)) * np.ones(len(notes))
-    return np.vstack((time_val, notes, durations)) 
+#     time_val = (1 /  len(notes)) * np.arange(0, len(notes))
+#     durations = (1 /  len(notes)) * np.ones(len(notes))
+#     return np.vstack((time_val, notes, durations)) 
 
 
-def make_chords_from_note_sequences(sequences):
-    """
-    Returns all unique chords from overlapping glissandi
+# def make_chords_from_note_sequences(sequences):
+#     """
+#     Returns all unique chords from overlapping glissandi
     
-    The First row is time
-    The last row is the duration of each note
-    Each gliss has a frequency row and a note duration row
+#     The First row is time
+#     The last row is the duration of each note
+#     Each gliss has a frequency row and a note duration row
     
-    """
-    # Get time values
-    time_tuple = ([seq[0] for seq in sequences])
-    time_vals = np.sort(np.unique(np.concatenate((time_tuple))))
+#     """
+#     # Get time values
+#     time_tuple = ([seq[0] for seq in sequences])
+#     time_vals = np.sort(np.unique(np.concatenate((time_tuple))))
     
-    # create array for time, glissandi and note durations
-    chords = np.zeros(((len(sequences) + 2), time_vals.shape[0]))
-    chords[0] = time_vals
+#     # create array for time, glissandi and note durations
+#     chords = np.zeros(((len(sequences) + 2), time_vals.shape[0]))
+#     chords[0] = time_vals
     
-    # calculate durations
-    diff = np.diff(time_vals)
-    chords[-1] = np.append(diff, [1 - np.sum(diff)])
+#     # calculate durations
+#     diff = np.diff(time_vals)
+#     chords[-1] = np.append(diff, [1 - np.sum(diff)])
     
-    # for every timestep in a gliss, set the note value in chords
-    for seq_idx, seq in enumerate(sequences):
-        g_time_idx = 1
-        for idx, time_val in enumerate(time_vals):
-            if seq[0, g_time_idx] > time_val:
-                chords[seq_idx + 1, idx] = seq[1, g_time_idx - 1]
-            else:
-                if (g_time_idx + 1) < seq.shape[1]:
-                    g_time_idx += 1
-                chords[seq_idx + 1,idx] = seq[1, g_time_idx - 1]
-    return chords
+#     # for every timestep in a gliss, set the note value in chords
+#     for seq_idx, seq in enumerate(sequences):
+#         g_time_idx = 1
+#         for idx, time_val in enumerate(time_vals):
+#             if seq[0, g_time_idx] > time_val:
+#                 chords[seq_idx + 1, idx] = seq[1, g_time_idx - 1]
+#             else:
+#                 if (g_time_idx + 1) < seq.shape[1]:
+#                     g_time_idx += 1
+#                 chords[seq_idx + 1,idx] = seq[1, g_time_idx - 1]
+#     return chords
 
     
 def approximate_equal_note_durations(durations, beats, subdivisons=4):

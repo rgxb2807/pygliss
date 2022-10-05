@@ -1,9 +1,15 @@
 from pygliss.constants import DIVISIONS, BASE, A440
+from pygliss.utils import make_freq_vector
+
 
 DIV = (DIVISIONS / 12)
 NOTE_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 HIGH_OCTAVE = 10
 LOW_OCTAVE = -3
+
+NOTE_VECTOR = make_freq_vector(DIVISIONS)
+NOTE_VECTOR_12 = make_freq_vector(12)
+
 
 
 class Note:

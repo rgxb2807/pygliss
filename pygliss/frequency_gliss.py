@@ -70,119 +70,119 @@ MIN_LOW = 16.3515978313
 #     return chords
 
     
-def approximate_equal_note_durations(durations, beats, subdivisons=4):
-    """
-    Returns the nearest equal  
+# def approximate_equal_note_durations(durations, beats, subdivisons=4):
+#     """
+#     Returns the nearest equal  
     
-    Let the number of durations in the sequence be the lcm.
-    Let beats be the "a" value for the lcm arg. Find the b value.  
-    Increase the lcm to get the lowest integer value.
-    """
-    note_count = len(durations)
-    tuple_val = note_count / beats
-    print(f"note count:{note_count} tuple:{tuple_val}")
+#     Let the number of durations in the sequence be the lcm.
+#     Let beats be the "a" value for the lcm arg. Find the b value.  
+#     Increase the lcm to get the lowest integer value.
+#     """
+#     note_count = len(durations)
+#     tuple_val = note_count / beats
+#     print(f"note count:{note_count} tuple:{tuple_val}")
     
-    while not tuple_val.is_integer():
-        note_count += 1
-        tuple_val = note_count / beats
-        print(f"note count:{note_count} tuple:{tuple_val}")
+#     while not tuple_val.is_integer():
+#         note_count += 1
+#         tuple_val = note_count / beats
+#         print(f"note count:{note_count} tuple:{tuple_val}")
         
-    # needs to be adjusted to handle tied tuple values
-    # 391.99543598 to 440 is five steps
-    # this can be repesented as a 3 values of quintuplets 
-    # 3 + 2 | 1 + 3 + 1 | 2 + 3
-    # what about adding 3 quintuplet rest to this example were 4 steps
+#     # needs to be adjusted to handle tied tuple values
+#     # 391.99543598 to 440 is five steps
+#     # this can be repesented as a 3 values of quintuplets 
+#     # 3 + 2 | 1 + 3 + 1 | 2 + 3
+#     # what about adding 3 quintuplet rest to this example were 4 steps
 
     
 
-def approximate_note_durations(durations, beats, subdivisons=4):
-    """
-    Given a set of time_values over 
-    """
-    if np.all(durations):
-        return approximate_equal_note_durations(durations, beats, subdivisons)
+# def approximate_note_durations(durations, beats, subdivisons=4):
+#     """
+#     Given a set of time_values over 
+#     """
+#     if np.all(durations):
+#         return approximate_equal_note_durations(durations, beats, subdivisons)
 
 
 
-def tiebreak_chord(chord, minimum_values_idx, tiebreak=None):
-    """
-    Breaks a tie when multiple target chords have the same number of steps from
-    the original chord and the subharmonics are the same
+# def tiebreak_chord(chord, minimum_values_idx, min_subharm_idx,tiebreak=None):
+#     """
+#     Breaks a tie when multiple target chords have the same number of steps from
+#     the original chord and the subharmonics are the same
 
-    The default is to choose the subharmonic who is derived from the lowest note 
-    in the chord.
+#     The default is to choose the subharmonic who is derived from the lowest note 
+#     in the chord.
 
-    set tiebreak to `highest` and the subhamonic is derived from the highest 
-    note in the chord is chosen
+#     set tiebreak to `highest` and the subhamonic is derived from the highest 
+#     note in the chord is chosen
 
-    """
-    row_idx, chord_idx = 0,0
-    if tiebreak =="highest":
-        row_idx = minimum_values_idx[np.argmax(chord[minimum_values_idx])]
-        chord_idx = min_subharm_idx[row_idx]
-    else:
-        row_idx = minimum_values_idx[np.argmin(chord[minimum_values_idx])]
-        chord_idx = min_subharm_idx[row_idx]
-    return row_idx, chord_idx
+#     """
+#     row_idx, chord_idx = 0,0
+#     if tiebreak =="highest":
+#         row_idx = minimum_values_idx[np.argmax(chord[minimum_values_idx])]
+#         chord_idx = min_subharm_idx[row_idx]
+#     else:
+#         row_idx = minimum_values_idx[np.argmin(chord[minimum_values_idx])]
+#         chord_idx = min_subharm_idx[row_idx]
+#     return row_idx, chord_idx
 
 
-def vectorized_nearest_ot(chord, m, tiebreak=None):
-    """
-    A vectorized implementation of finding the nearest overtone chord extended 
-    fromTerhardt's subCoincidence algorithm for calculating virtual pitch
+# def vectorized_nearest_ot(chord, m, tiebreak=None):
+#     """
+#     A vectorized implementation of finding the nearest overtone chord extended 
+#     fromTerhardt's subCoincidence algorithm for calculating virtual pitch
     
-    m is the number of subharmonics considered
+#     m is the number of subharmonics considered
     
-    tiebreak defaults to selecting the lowest note to generate from an  overtone 
-    chord. Enter `highest` to choose which tied chords are selected
-    """
+#     tiebreak defaults to selecting the lowest note to generate from an  overtone 
+#     chord. Enter `highest` to choose which tied chords are selected
+#     """
 
-    chord_steps = find_note_vector_position_vectorized(chord)
-    no_notes = len(chord)
-    # generate all possible overtone chords
-    all_chord_sets = np.ones((no_notes, m, no_notes))
-    for i in range(no_notes):
-        subharmonics = chord[i] * (1 / np.arange(1, m + 1))
-        # filter values lower than human hearing
-        subharmonics = np.where(subharmonics >= MIN_LOW, subharmonics, -1)
-        harmonics = np.rint(chord / subharmonics[:,np.newaxis])
-        chords = harmonics * subharmonics[:, np.newaxis]
-        all_chord_sets[i] = chords
+#     chord_steps = find_note_vector_position_vectorized(chord)
+#     no_notes = len(chord)
+#     # generate all possible overtone chords
+#     all_chord_sets = np.ones((no_notes, m, no_notes))
+#     for i in range(no_notes):
+#         subharmonics = chord[i] * (1 / np.arange(1, m + 1))
+#         # filter values lower than human hearing
+#         subharmonics = np.where(subharmonics >= MIN_LOW, subharmonics, -1)
+#         harmonics = np.rint(chord / subharmonics[:,np.newaxis])
+#         chords = harmonics * subharmonics[:, np.newaxis]
+#         all_chord_sets[i] = chords
         
-    # convert frequencies to nearest step of temperment set in `DIVISIONS`
-    all_chord_steps = find_note_vector_position_vectorized(all_chord_sets)
+#     # convert frequencies to nearest step of temperment set in `DIVISIONS`
+#     all_chord_steps = find_note_vector_position_vectorized(all_chord_sets)
     
-    # right now we'll do pure summing, but you may want to consider
-    # different methods, what if all notes were exact but one was way off.
-    # another chord might have a bunch of tones that are close, but the distance
-    # is a little bit more
-    diff_from_target_chord = np.sum(np.abs(all_chord_steps - chord_steps), axis=2)
+#     # right now we'll do pure summing, but you may want to consider
+#     # different methods, what if all notes were exact but one was way off.
+#     # another chord might have a bunch of tones that are close, but the distance
+#     # is a little bit more
+#     diff_from_target_chord = np.sum(np.abs(all_chord_steps - chord_steps), axis=2)
     
-    ## find the chord with least number of steps and the lowest subharmonic
-    # get the idx of the minimum number of steps of the subharmonics for each 
-    # note of the input chord
-    min_subharm_idx = np.argmin(diff_from_target_chord, axis=1)
-    min_subharm_values = np.take_along_axis(diff_from_target_chord, 
-    	min_subharm_idx[:, np.newaxis], axis=1).T[0]
+#     ## find the chord with least number of steps and the lowest subharmonic
+#     # get the idx of the minimum number of steps of the subharmonics for each 
+#     # note of the input chord
+#     min_subharm_idx = np.argmin(diff_from_target_chord, axis=1)
+#     min_subharm_values = np.take_along_axis(diff_from_target_chord, 
+#     	min_subharm_idx[:, np.newaxis], axis=1).T[0]
 
-    #find the minimum of every chord
-    minimum_values_idx = np.argwhere(min_subharm_values == np.amin(
-    	min_subharm_values)).T[0]
+#     #find the minimum of every chord
+#     minimum_values_idx = np.argwhere(min_subharm_values == np.amin(
+#     	min_subharm_values)).T[0]
 
-    row_idx, chord_idx = 0, 0
-    if minimum_values_idx.size == 1: # if only 1 value exists
-        row_idx = minimum_values_idx[0]
-        chord_idx = min_subharm_idx[row_idx]
-    else:
-        # take value with lower subharmonic
-        # tiebreak - both have same subharmonic value, choose lowest default
-        if np.all(min_subharm_idx[minimum_values_idx]):
-            row_idx, chord_idx = tiebreak_chord(chord, minimum_values_idx, tiebreak)
+#     row_idx, chord_idx = 0, 0
+#     if minimum_values_idx.size == 1: # if only 1 value exists
+#         row_idx = minimum_values_idx[0]
+#         chord_idx = min_subharm_idx[row_idx]
+#     else:
+#         # take value with lower subharmonic
+#         # tiebreak - both have same subharmonic value, choose lowest default
+#         if np.all(min_subharm_idx[minimum_values_idx]):
+#             row_idx, chord_idx = tiebreak_chord(chord, minimum_values_idx, min_subharm_idx,tiebreak)
                 
-        row_idx = np.min(min_subharm_idx[minimum_values_idx])
-        chord_idx = min_subharm_idx[row_idx]
+#         row_idx = np.min(min_subharm_idx[minimum_values_idx])
+#         chord_idx = min_subharm_idx[row_idx]
     
-    return all_chord_sets[row_idx, chord_idx]
+#     return all_chord_sets[row_idx, chord_idx]
 
 
 ##### Nearest FM Chords
@@ -309,20 +309,20 @@ def verify_solutions(chord, solutions):
         print("----\n")
 
 
-def get_chord_distance(chord1, chord2):
-    """
-    Find Min distance between two chords (chord be stepwise or frequency)
-    notes should be able to doublecount, thus why the vectorized implementation is more difficult
+# def get_chord_distance(chord1, chord2):
+#     """
+#     Find Min distance between two chords (chord be stepwise or frequency)
+#     notes should be able to doublecount, thus why the vectorized implementation is more difficult
     
-    """
-    smaller, larger, dist = chord1, chord2, 0
-    if len(chord1) > len(chord2):
-        smaller = chord2
-        larger = chord1
+#     """
+#     smaller, larger, dist = chord1, chord2, 0
+#     if len(chord1) > len(chord2):
+#         smaller = chord2
+#         larger = chord1
         
-    for i in range(len(smaller)):
-        dist += np.abs(larger - smaller[i]).min()
-    return dist
+#     for i in range(len(smaller)):
+#         dist += np.abs(larger - smaller[i]).min()
+#     return dist
 
 
 

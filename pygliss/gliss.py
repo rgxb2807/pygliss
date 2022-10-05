@@ -1,6 +1,6 @@
 
 from pygliss.sequence import NoteSequence
-from pygliss.utils import NOTE_VECTOR, NOTE_VECTOR_12
+from pygliss.note import NOTE_VECTOR, NOTE_VECTOR_12
 
 import numpy as np
 

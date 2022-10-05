@@ -1,7 +1,28 @@
 import numpy as np
 from pygliss.utils import find_note_vector_position_vectorized
-from pygliss.note import freq_to_note
+from pygliss.note import freq_to_note, NOTE_VECTOR, NOTE_VECTOR_12
 from pygliss.constants import LOW
+
+
+MAX_SIDEBANDS = 20
+FREQ_MODULATORS = np.outer(np.arange(1, MAX_SIDEBANDS+1), NOTE_VECTOR)
+SUM_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
+DIFF_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
+FM_CHORDS = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS * 2, len(NOTE_VECTOR)))
+FM_CHORDS_W_CARRIER = np.zeros((len(NOTE_VECTOR), ((MAX_SIDEBANDS * 2) + 1), len(NOTE_VECTOR)))
+
+for i in range(len(NOTE_VECTOR)):
+    SUM_TONES[i] = NOTE_VECTOR[i] + FREQ_MODULATORS
+    DIFF_TONES[i] = np.abs(NOTE_VECTOR[i] - FREQ_MODULATORS)
+    FM_CHORDS[i] = np.vstack((SUM_TONES[i], DIFF_TONES[i]))
+    carrier = np.ones(len(NOTE_VECTOR)) * NOTE_VECTOR[i]
+    FM_CHORDS_W_CARRIER[i] = np.vstack((FM_CHORDS[i], carrier))
+
+
+FM_CHORDS_STEPS = find_note_vector_position_vectorized(FM_CHORDS)
+FM_CHORDS_W_CARRIER_STEPS = find_note_vector_position_vectorized(FM_CHORDS_W_CARRIER)
+
+
 
 class Chord:
     """
@@ -138,6 +159,65 @@ class OvertoneChord(Chord):
         return freq_to_note(self.fundamental)
 
 
+class FMChord(Chord):
+    """
+    A class to represent an FM chord
+
+    ...
+
+    Attributes
+    ----------
+        notes : numpy.ndarray[numpy.float64] 
+            the notes of the chord represented as frequency values
+        duration : numpy.float64
+            the duration of the chord
+        fundamental : numpy.float64
+            fundamental of the overtone chord
+
+
+    Methods
+    -------
+        
+
+    """
+    def __init__(self, notes, carrier, modulator, duration=1):
+        """
+        Contructs Overtone Chord
+
+        Parameters
+        ----------
+            notes : numpy.ndarray[numpy.float64] 
+                the notes of the chord represented as frequency values
+            duration : numpy.float64
+                the end note of the gliss
+            fundamental : numpy.float64
+                fundamental of the overtone chord
+        """
+        super().__init__(notes, duration)
+        self.carrier = carrier
+        self.modulator = modulator
+        self.sum_tones = get_sum_tones(self.carrier, self.modulator)
+        self.diff_tones = get_diff_tones(self.carrier, self.modulator)
+        self.chord_sum_tones = np.intersect1d(self.notes, self.sum_tones)
+        self.chord_diff_tones = np.intersect1d(self.notes, self.diff_tones)
+        self.missing_sum_tones = np.setdiff1d(self.chord_sum_tones, self.sum_tones)
+        self.missing_diff_tones = np.setdiff1d(self.chord_diff_tones, self.diff_tones)
+
+    def fundamental_note(self):
+        return freq_to_note(self.fundamental)
+
+
+
+def get_sum_tones(carrier, modulator, sidebands=MAX_SIDEBANDS):
+    indicies = find_note_vector_position_vectorized(np.array([carrier, modulator]))
+    print(f"get sum tones - c:{carrier} m:{modulator}")
+    print(indicies)
+    return FM_CHORDS[indicies[0],:sidebands,indicies[1]]
+
+def get_diff_tones(carrier, modulator, sidebands=MAX_SIDEBANDS):
+    indicies = find_note_vector_position_vectorized(np.array([carrier, modulator]))
+    return FM_CHORDS[indicies[0],sidebands:,indicies[1]]
+
 
 def get_chord_distance(chord1_steps, chord2_steps, doublecount=True):
     """
@@ -226,6 +306,73 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
     fundamental = chord_freq[row_idx] * (1 / (chord_idx + 1))
     
     return OvertoneChord(ot_notes, fundamental)
+
+
+
+
+def closest_fm_chord(chord_freq, sidebands=None):
+    """
+    Find the closest stepwise FM chords to the input chord 
+
+    Parameters
+    ----------
+        chord_freq : numpy.ndarray[numpy.float64]
+            the frequencies of the input chord
+        sidebands : int
+            the number of sidebands considered, uses MAX_SIDEBANDS if not
+            specified
+
+    Returns
+    -------
+        chord frequencies of nearest overtone : numpy.ndarray[numpy.float64]
+            the nearest overtone chord frequencies as a numpy array
+    """
+    fm_chords_steps_w_carrier = None
+    if not sidebands:
+        fm_chords_steps_w_carrier = FM_CHORDS_W_CARRIER_STEPS
+    elif sidebands < MAX_SIDEBANDS:
+        sum_tones = FM_CHORDS_W_CARRIER_STEPS[:,:sidebands,:]
+        diff_tones = FM_CHORDS_W_CARRIER_STEPS[:,sidebands:-1,:]
+        carrier = FM_CHORDS_W_CARRIER_STEPS[:,MAX_SIDEBANDS * 2:,:]
+        temp = np.hstack((sum_tones, diff_tones))
+        fm_chords_steps_w_carrier = np.hstack((temp, carrier))
+
+    chord_steps = np.sort(find_note_vector_position_vectorized(chord_freq))
+    min_steps, candidates = float("+inf"), set()
+    solutions = []
+    
+    #find minimium stepwise distance of each chord note to all FM CHORDS
+    for i in range(len(chord_steps)):
+        diff = np.abs(fm_chords_steps_w_carrier - chord_steps[i])
+        min_diff = np.where(diff == diff.min())
+        #add candidate chords to set
+        for idx in range(len(min_diff[0])):
+            candidates.add((min_diff[0][idx], min_diff[2][idx]))
+    
+    #find minimium stepwise distance of each candidate chord to original chord
+    for candidate in candidates:
+        fm_chord = fm_chords_steps_w_carrier[candidate[0],:,candidate[1]]
+        dist = get_chord_distance(chord_steps, fm_chord)
+        if dist < min_steps:
+            min_steps = dist
+            solutions = [{
+                "min_steps":min_steps,
+                "fm_chord":FMChord(chord_freq, NOTE_VECTOR[candidate[0]], 
+                    NOTE_VECTOR[candidate[1]])
+            }]
+
+        elif dist == min_steps:
+            solutions.append({
+                "min_steps":min_steps,
+                "fm_chord":FMChord(chord_freq, NOTE_VECTOR[candidate[0]], 
+                    NOTE_VECTOR[candidate[1]])
+            })
+
+    return sorted(solutions, key=lambda x: (x['fm_chord'].carrier, x['fm_chord'].modulator))
+
+
+
+
 
 
 

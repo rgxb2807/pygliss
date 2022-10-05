@@ -1,4 +1,6 @@
 import numpy as np
+from pygliss.utils import find_note_vector_position_vectorized
+from pygliss.constants import LOW
 
 class Chord:
     """
@@ -16,20 +18,21 @@ class Chord:
 
     Methods
     -------
-        highest_note : 
+        highest_note: 
             returns highest note in the chord
-
-        lowest_note : 
+        
+        lowest_note: 
             returns lowest note in the chord
-
-        closest_note : 
-            returns closest note in the chord to input chord
-
-
+        
+        closest_note(note): 
+            returns closest note in the chord to input note
+        
+        distance(in_chord): 
+            returns distances between the current chord and the input chord
 
     """
 
-    def __init__(self, notes, duration):
+    def __init__(self, notes, duration=1):
 
         """
         Contructs Chord
@@ -44,6 +47,8 @@ class Chord:
 
         self.notes = notes
         self.duration = duration
+        self.length = len(notes)
+        self.steps = find_note_vector_position_vectorized(notes)
 
     def __str__ (self):
         return f"{self.notes} {self.duration}"
@@ -51,7 +56,7 @@ class Chord:
     def __eq__(self, other):
         return np.array_equal(self.notes, other)
 
-    def __ne__(self, other)
+    def __ne__(self, other):
         return np.array_equal(self.notes, other) == False
 
     def highest_note(self):
@@ -60,91 +65,120 @@ class Chord:
     def lowest_note(self):
         return np.sort(self.notes)[0]
 
-    def closest_notes(self, note):
-        return self.notes[np.abs(notes - note).argmin()]
+    def closest_note(self, note):
+        return self.notes[np.abs(self.notes - note).argmin()]
+
+    def distance(self, in_chord):
+        """
+        Returns stepwise distance from self to input chord `in_chord`
+        Notes can be double counted, for every note, the closest is found
+        
+        Parameters
+        ----------
+            in_chord : pygliss.Chord
+                the input chord
+
+        Returns
+        -------
+            dist : int
+                The stepwise distance between two chords
+
+        """
+        smaller, larger, dist = self.steps, in_chord.steps, 0
+        if self.length > in_chord.length:
+            smaller = in_chord.steps
+            larger = self.steps
+            
+        for i in range(len(smaller)):
+            dist += np.abs(larger - smaller[i]).min()
+        return dist
 
 
 
 
-def tiebreak_chord(chord, minimum_values_idx, tiebreak=None):
+
+def get_chord_distance(chord1_steps, chord2_steps, doublecount=True):
     """
-    Breaks a tie when multiple target chords have the same number of steps from
-    the original chord and the subharmonics are the same
+    Returns stepwise distance between two chords represented as numpy arrays of
+    note positions. It could also be used for arrays of frequencies but this wouldn't
+    really give chordal distance.
 
-    The default is to choose the subharmonic who is derived from the lowest note 
-    in the chord.
+    Notes can be double counted, for every note, the closest is found
 
-    set tiebreak to `highest` and the subhamonic is derived from the highest 
-    note in the chord is chosen
+    Parameters
+    ----------
+        chord1 : numpy.ndarray[numpy.int64]
+            chord 1 input
+        chord2 : numpy.ndarray[numpy.int64] 
+            chord 2 input
 
+    Returns
+    -------
+        dist : int
+            The stepwise distance between two chords
     """
-    row_idx, chord_idx = 0,0
-    if tiebreak =="highest":
-        row_idx = minimum_values_idx[np.argmax(chord[minimum_values_idx])]
-        chord_idx = min_subharm_idx[row_idx]
-    else:
-        row_idx = minimum_values_idx[np.argmin(chord[minimum_values_idx])]
-        chord_idx = min_subharm_idx[row_idx]
-    return row_idx, chord_idx
+    if not doublecount:
+        # TODO
+        pass
+
+    smaller, larger, dist = chord1_steps, chord2_steps, 0
+    if len(chord1_steps) > len(chord2_steps):
+        smaller = chord2_steps
+        larger = chord1_steps
+        
+    for i in range(len(smaller)):
+        dist += np.abs(larger - smaller[i]).min()
+    return dist
 
 
-def nearest_ot_chord(chord, m, tiebreak=None):
+
+def nearest_ot_chord(chord_freq, m, tiebreak=None):
     """
-    http://jjensen.org/VirtualPitch.html
-    
     A vectorized implementation of finding the nearest overtone chord extended 
-    from Terhardt's subCoincidence algorithm for calculating virtual pitch
-    
-    m is the number of subharmonics considered
-    
-    tiebreak defaults to selecting the lowest note to generate from an  overtone 
-    chord. Enter `highest` to choose which tied chords are selected
-    """
+    from Terhardt's subCoincidence algorithm for calculating virtual pitch. See
+    http://jjensen.org/VirtualPitch.html
 
-    chord_steps = find_note_vector_position_vectorized(chord)
-    no_notes = len(chord)
+    Parameters
+    ----------
+        chord_freq : numpy.ndarray[numpy.float64]
+            the frequencies of the input chord
+        m : int
+            the number of subharmonics considered
+        tiebreak : str
+            determines the behavior of the tiebreak. set tiebreak to `highest` 
+            and the subhamonic is derived from the highest note in the chord is 
+            chosen
+
+    Returns
+    -------
+        chord frequencies of nearest overtone : numpy.ndarray[numpy.float64]
+            the nearest overtone chord frequencies as a numpy array
+    """
+    chord_freq = np.sort(chord_freq)
+    chord_steps = find_note_vector_position_vectorized(chord_freq)
+    len_notes = len(chord_freq)
+    
     # generate all possible overtone chords
-    all_chord_sets = np.ones((no_notes, m, no_notes))
-    for i in range(no_notes):
-        subharmonics = chord[i] * (1 / np.arange(1, m + 1))
+    all_chord_sets = np.ones((len_notes, m, len_notes))
+    for i in range(len_notes):
+        subharmonics = chord_freq[i] * (1 / np.arange(1, m + 1))
         # filter values lower than human hearing
-        subharmonics = np.where(subharmonics >= MIN_LOW, subharmonics, -1)
-        harmonics = np.rint(chord / subharmonics[:,np.newaxis])
+        subharmonics = np.where(subharmonics >= LOW, subharmonics, -1)
+        harmonics = np.rint(chord_freq / subharmonics[:,np.newaxis])
         chords = harmonics * subharmonics[:, np.newaxis]
         all_chord_sets[i] = chords
         
     # convert frequencies to nearest step of temperment set in `DIVISIONS`
     all_chord_steps = find_note_vector_position_vectorized(all_chord_sets)
     
-    # right now we'll do pure summing, but you may want to consider
-    # different methods, what if all notes were exact but one was way off.
-    # another chord might have a bunch of tones that are close, but the distance
-    # is a little bit more
+    # distance by summing stepwise difference along axis
     diff_from_target_chord = np.sum(np.abs(all_chord_steps - chord_steps), axis=2)
-    
-    ## find the chord with least number of steps and the lowest subharmonic
-    # get the idx of the minimum number of steps of the subharmonics for each 
-    # note of the input chord
-    min_subharm_idx = np.argmin(diff_from_target_chord, axis=1)
-    min_subharm_values = np.take_along_axis(diff_from_target_chord, 
-        min_subharm_idx[:, np.newaxis], axis=1).T[0]
 
-    #find the minimum of every chord
-    minimum_values_idx = np.argwhere(min_subharm_values == np.amin(
-        min_subharm_values)).T[0]
-
-    row_idx, chord_idx = 0, 0
-    if minimum_values_idx.size == 1: # if only 1 value exists
-        row_idx = minimum_values_idx[0]
-        chord_idx = min_subharm_idx[row_idx]
-    else:
-        # take value with lower subharmonic
-        # tiebreak - both have same subharmonic value, choose lowest default
-        if np.all(min_subharm_idx[minimum_values_idx]):
-            row_idx, chord_idx = tiebreak_chord(chord, minimum_values_idx, tiebreak)
-                
-        row_idx = np.min(min_subharm_idx[minimum_values_idx])
-        chord_idx = min_subharm_idx[row_idx]
+    # choose lowest subharmonic chord
+    min_diff = np.where(diff_from_target_chord == diff_from_target_chord.min())
+    row_idx, chord_idx = min_diff[0][0], min_diff[1][0]
+    if tiebreak == "highest":
+        row_idx, chord_idx = min_diff[0][-1], min_diff[1][-1]
     
     return all_chord_sets[row_idx, chord_idx]
 

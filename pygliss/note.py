@@ -1,5 +1,6 @@
 from pygliss.constants import DIVISIONS, BASE, A440
 from pygliss.utils import make_freq_vector
+import numpy as np
 
 
 DIV = (DIVISIONS / 12)
@@ -9,7 +10,6 @@ LOW_OCTAVE = -3
 
 NOTE_VECTOR = make_freq_vector(DIVISIONS)
 NOTE_VECTOR_12 = make_freq_vector(12)
-
 
 
 class Note:
@@ -471,4 +471,28 @@ def freq_to_note(freq):
 
 def get_partial(note, fundamental):
 	return note.frequency() / fundamental.frequency()
+
+
+def find_note_vector_position(note_frequency, trunc_beg=None, trunc_end=None):
+    """
+    Finds note position of a given frequency or array of frequencies
+
+    Truncate note array from the begging or end by setting optional arguments
+
+    """
+    note_vector = NOTE_VECTOR
+    if trunc_beg:
+        note_vector = note_vector[trunc_beg:]
+    if trunc_end:
+        note_vector = note_vector[:trunc_end]
+
+    note_positions = (np.abs(note_vector - note_frequency)).argmin()
+    note_positions = np.where(note_positions == 0, -999999, note_positions)
+    return note_positions
+
+
+def find_closest_frequency(note_frequency, note_vector=NOTE_VECTOR):
+    return note_vector[(np.abs(note_vector - note_frequency)).argmin()]
+
+find_note_vector_position_vectorized = np.vectorize(find_note_vector_position)
 

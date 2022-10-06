@@ -1,6 +1,7 @@
 import numpy as np
 from collections import OrderedDict
-from pygliss.utils import make_freq_vector, make_freq_to_steps_map, find_note_vector_position_vectorized
+from pygliss.utils import make_freq_vector, make_freq_to_steps_map
+from pygliss.note import find_note_vector_position_vectorized
 import time
 
 NOTE_VECTOR = make_freq_vector()
@@ -397,3 +398,20 @@ def closet_fm_chord_vectorized(chord, sidebands=None):
 # print(len(solutions_v))
 # verify_solutions(test_chords[test_idx], solutions_v)
 # print(time.time() - start)
+
+
+
+def calc_roughness_pair(freq_1,freq_2,amp_1=1, amp_2=2):
+    """
+    roughness http://www.acousticslab.org/learnmoresra/moremodel.html
+    """
+    A_min, A_max = np.minimum(amp_1,amp_2), np.maximum(amp_1, amp_2)
+    F_min, F_max = np.minimum(freq_1, freq_2), np.maximum(freq_1, freq_2)
+    X = A_min * A_max
+    Y = 2 * A_min / (A_min + A_max)
+    b1, b2 = 3.5, 5.75
+    s1, s2 = 0.0207, 18.96
+    s = 0.24 / (s1 * F_min + s2)
+    Z = np.exp(-1 * b1 * s *(F_max - F_min)) - np.exp(-b2 * s * (F_max - F_min))
+    R = np.power(X, 0.1) * 0.5 * np.power(Y, 3.11) * Z
+    return R

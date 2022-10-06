@@ -116,6 +116,95 @@ class TestChordMethods(unittest.TestCase):
 
 		self.assertEqual(pygliss.note.Note('D', 1).frequency(), ot.fundamental_note().frequency())
 
+	def test_fm_1(self):
+		
+		note_1 = pygliss.note.freq_to_note(110.0)
+		note_2 = pygliss.note.freq_to_note(220.0)
+		note_3 = pygliss.note.freq_to_note(330.0)
+
+		test_chord = pygliss.chord.Chord(np.array([note_1.frequency(), note_2.frequency(),
+			note_3.frequency()]))
+		fm_test_chord = pygliss.chord.FMChord(test_chord.notes, 880.0, 110.)
+
+		fm_solutions = pygliss.chord.nearest_fm_chord(test_chord.notes)
+
+		self.assertEqual(fm_solutions[0]['fm_chord'].carrier, 880.0)
+		self.assertEqual(fm_solutions[0]['fm_chord'].modulator, 110.0)
+		self.assertEqual(fm_solutions[0]['roughness'], fm_test_chord.roughness())
+
+
+
+
+	def test_fm_2(self):
+
+		note_1 = pygliss.note.freq_to_note(151.6255653)
+		note_2 = pygliss.note.freq_to_note(261.6255653)
+		note_3 = pygliss.note.freq_to_note(371.6255653)
+
+		test_chord = pygliss.chord.Chord(np.array([note_1.frequency(), note_2.frequency(),
+			note_3.frequency()]))
+		fm_test_chord = pygliss.chord.FMChord(test_chord.notes, 880.0, 103.82617439498628)
+
+		fm_solutions = pygliss.chord.nearest_fm_chord(test_chord.notes)
+		
+		self.assertEqual(fm_solutions[0]['fm_chord'].carrier, 880.0)
+		self.assertEqual(fm_solutions[0]['fm_chord'].modulator, 103.82617439498628)
+		self.assertEqual(fm_solutions[0]['roughness'], fm_test_chord.roughness())
+
+	def test_fm_3(self):
+
+		note_1 = pygliss.note.freq_to_note(113.22324603)
+		note_2 = pygliss.note.freq_to_note(220.0)
+		note_3 = pygliss.note.freq_to_note(330.0)
+
+		test_chord = pygliss.chord.Chord(np.array([note_1.frequency(), note_2.frequency(),
+			note_3.frequency()]))
+		fm_test_chord = pygliss.chord.FMChord(test_chord.notes, 987.7666025122483, 110.)
+
+		fm_solutions = pygliss.chord.nearest_fm_chord(test_chord.notes)
+
+		self.assertEqual(fm_solutions[0]['fm_chord'].carrier, 987.7666025122483)
+		self.assertEqual(fm_solutions[0]['fm_chord'].modulator, 110.0)
+		self.assertEqual(fm_solutions[0]['roughness'], fm_test_chord.roughness())
+
+	def test_fm_4(self):
+
+		note_1 = pygliss.note.freq_to_note(146.83238396)
+		note_2 = pygliss.note.freq_to_note(261.6255653)
+		note_3 = pygliss.note.freq_to_note(380.83608684)
+
+		test_chord = pygliss.chord.Chord(np.array([note_1.frequency(), note_2.frequency(),
+			note_3.frequency()]))
+		fm_test_chord = pygliss.chord.FMChord(test_chord.notes, 1661.2187903197805, 116.5409403795224)
+
+		fm_solutions = pygliss.chord.nearest_fm_chord(test_chord.notes)
+
+		self.assertEqual(fm_solutions[0]['fm_chord'].carrier, 1661.2187903197805)
+		self.assertEqual(fm_solutions[0]['fm_chord'].modulator, 116.54094037952248)
+		self.assertEqual(fm_solutions[0]['roughness'], fm_test_chord.roughness())
+
+	def test_fm_5(self):
+
+		note_1 = pygliss.note.freq_to_note(110.0)
+		note_2 = pygliss.note.freq_to_note(220.0)
+		note_3 = pygliss.note.freq_to_note(330.0)
+		note_3 = pygliss.note.freq_to_note(440.0)
+
+
+		test_chord = pygliss.chord.Chord(np.array([note_1.frequency(), note_2.frequency(),
+			note_3.frequency()]))
+		fm_test_chord = pygliss.chord.FMChord(test_chord.notes, 4066.8414929904015, 329.6275569128699)
+
+		fm_solutions = pygliss.chord.nearest_fm_chord(test_chord.notes)
+
+		self.assertEqual(fm_solutions[0]['fm_chord'].carrier, 4066.8414929904015)
+		self.assertEqual(fm_solutions[0]['fm_chord'].modulator, 329.6275569128699)
+		self.assertEqual(fm_solutions[0]['roughness'], fm_test_chord.roughness())
+
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

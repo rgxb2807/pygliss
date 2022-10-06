@@ -117,7 +117,8 @@ class OvertoneChord(Chord):
 
     Methods
     -------
-        
+        fundamental_note()
+            returns instance of pygliss.note.Note of the fundamental pitch
 
     """
     def __init__(self, notes, fundamental, duration=1):
@@ -236,9 +237,9 @@ class FMChord(Chord):
     def diff_tones(self):
         """ Returns all difference tones from carrier and modulator"""
         indicies = find_note_vector_position_vectorized(np.array([self.carrier, self.modulator]))
-        if np.isclose(carrier, LOW):
+        if np.isclose(self.carrier, LOW):
             indicies[0] = 0
-        if np.isclose(modulator, LOW):
+        if np.isclose(self.modulator, LOW):
             indicies[1] = 0
         if np.isclose(self.carrier, HIGH):
             indicies[0] = -1
@@ -249,9 +250,9 @@ class FMChord(Chord):
     def fm_tones(self):
         """Returns all sum and difference tones from carrier and modulator"""
         indicies = find_note_vector_position_vectorized(np.array([self.carrier, self.modulator]))
-        if np.isclose(carrier, LOW):
+        if np.isclose(self.carrier, LOW):
             indicies[0] = 0
-        if np.isclose(modulator, LOW):
+        if np.isclose(self.modulator, LOW):
             indicies[1] = 0
         if np.isclose(self.carrier, HIGH):
             indicies[0] = -1
@@ -282,9 +283,9 @@ class FMChord(Chord):
 
         Set `only_notes` to True and only chord notes are calculated for roughness
         """
-        if not only_notes:
-            return calc_roughness_vectorized(self.notes)
-        return calc_roughness_vectorized(self.fm_tones())
+        if only_notes:
+            return calc_roughness(self.notes)
+        return calc_roughness(self.fm_tones())
 
 
 
@@ -413,9 +414,9 @@ def calc_roughness(chord_freq):
     return np.sum(R)
 
 
-def closest_fm_chord(chord_freq, sidebands=None):
+def nearest_fm_chord(chord_freq, sidebands=None):
     """
-    Find the closest stepwise FM chords to the input chord 
+    Find the nearest stepwise FM chords to the input chord 
 
     Parameters
     ----------

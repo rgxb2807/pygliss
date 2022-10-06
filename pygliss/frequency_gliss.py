@@ -4,8 +4,8 @@ from pygliss.utils import make_freq_vector, make_freq_to_steps_map
 from pygliss.note import find_note_vector_position_vectorized
 import time
 
-NOTE_VECTOR = make_freq_vector()
-MIN_LOW = 16.3515978313
+# NOTE_VECTOR = make_freq_vector()
+# MIN_LOW = 16.3515978313
 
 # def calc_gliss(start, end):
 #     """
@@ -202,87 +202,87 @@ test_chords = np.array([
 ])
 
 
-NOTE_VECTOR = make_freq_vector()
-TRUNC_BEG = None
-TRUNC_END = None
-NOTE_VECTOR = NOTE_VECTOR[TRUNC_BEG:TRUNC_END]
+# NOTE_VECTOR = make_freq_vector()
+# TRUNC_BEG = None
+# TRUNC_END = None
+# NOTE_VECTOR = NOTE_VECTOR[TRUNC_BEG:TRUNC_END]
 
-MAX_SIDEBANDS = 20
-freq_modulators = np.outer(np.arange(1, MAX_SIDEBANDS+1), NOTE_VECTOR)
-SUM_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
-DIFF_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
-FM_CHORDS = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS * 2, len(NOTE_VECTOR)))
-FM_CHORDS_W_CARRIER = np.zeros((len(NOTE_VECTOR), ((MAX_SIDEBANDS * 2) + 1), len(NOTE_VECTOR)))
+# MAX_SIDEBANDS = 20
+# freq_modulators = np.outer(np.arange(1, MAX_SIDEBANDS+1), NOTE_VECTOR)
+# SUM_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
+# DIFF_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
+# FM_CHORDS = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS * 2, len(NOTE_VECTOR)))
+# FM_CHORDS_W_CARRIER = np.zeros((len(NOTE_VECTOR), ((MAX_SIDEBANDS * 2) + 1), len(NOTE_VECTOR)))
 
-for i in range(len(NOTE_VECTOR)):
-    SUM_TONES[i] = NOTE_VECTOR[i] + freq_modulators
-    DIFF_TONES[i] = np.abs(NOTE_VECTOR[i] - freq_modulators)
-    FM_CHORDS[i] = np.vstack((SUM_TONES[i], DIFF_TONES[i]))
-    carrier = np.ones(len(NOTE_VECTOR)) * NOTE_VECTOR[i]
-    FM_CHORDS_W_CARRIER[i] = np.vstack((FM_CHORDS[i], carrier))
-
-
-FM_CHORDS_STEPS = find_note_vector_position_vectorized(FM_CHORDS, TRUNC_BEG, TRUNC_END)
-FM_CHORDS_W_CARRIER_STEPS = find_note_vector_position_vectorized(FM_CHORDS_W_CARRIER, TRUNC_BEG, TRUNC_END)
+# for i in range(len(NOTE_VECTOR)):
+#     SUM_TONES[i] = NOTE_VECTOR[i] + freq_modulators
+#     DIFF_TONES[i] = np.abs(NOTE_VECTOR[i] - freq_modulators)
+#     FM_CHORDS[i] = np.vstack((SUM_TONES[i], DIFF_TONES[i]))
+#     carrier = np.ones(len(NOTE_VECTOR)) * NOTE_VECTOR[i]
+#     FM_CHORDS_W_CARRIER[i] = np.vstack((FM_CHORDS[i], carrier))
 
 
+# FM_CHORDS_STEPS = find_note_vector_position_vectorized(FM_CHORDS, TRUNC_BEG, TRUNC_END)
+# FM_CHORDS_W_CARRIER_STEPS = find_note_vector_position_vectorized(FM_CHORDS_W_CARRIER, TRUNC_BEG, TRUNC_END)
 
 
-def closet_fm_chord(chord):
-    """
-    find the closest FM chord to the input chord 
-    when a tie is found give priority to the carrier of the found chord 
-    that is closest to the lowest note of the input chord
-    """
+
+
+# def closet_fm_chord(chord):
+#     """
+#     find the closest FM chord to the input chord 
+#     when a tie is found give priority to the carrier of the found chord 
+#     that is closest to the lowest note of the input chord
+#     """
     
-    chord_steps = np.sort(find_note_vector_position_vectorized(chord, TRUNC_BEG, TRUNC_END))
-    solutions = []
-    min_steps, best_i,best_j, best_carrier, best_mod = float("+inf"), 0, 0, 0.0, 0.0
-    for i in range(len(NOTE_VECTOR)):
-        cur_carrier = NOTE_VECTOR[i]
-        for j in range(len(NOTE_VECTOR)):
-            cur_mod = NOTE_VECTOR[j]
-            current_fm_chord = FM_CHORDS[i,:,j]
-            current_fm_chord_steps = find_note_vector_position_vectorized(current_fm_chord, TRUNC_BEG, TRUNC_END)
-            #add carrier
-            current_fm_chord_steps = np.append(current_fm_chord_steps, i)
-            temp_min_steps = 0
+#     chord_steps = np.sort(find_note_vector_position_vectorized(chord, TRUNC_BEG, TRUNC_END))
+#     solutions = []
+#     min_steps, best_i,best_j, best_carrier, best_mod = float("+inf"), 0, 0, 0.0, 0.0
+#     for i in range(len(NOTE_VECTOR)):
+#         cur_carrier = NOTE_VECTOR[i]
+#         for j in range(len(NOTE_VECTOR)):
+#             cur_mod = NOTE_VECTOR[j]
+#             current_fm_chord = FM_CHORDS[i,:,j]
+#             current_fm_chord_steps = find_note_vector_position_vectorized(current_fm_chord, TRUNC_BEG, TRUNC_END)
+#             #add carrier
+#             current_fm_chord_steps = np.append(current_fm_chord_steps, i)
+#             temp_min_steps = 0
             
-            # find closet note in each chord
-            for k in range(len(chord_steps)):
-                # for each not of the input chord, find the closet
-                # tone in the current FM chord
-                min_note_dist = np.abs(current_fm_chord_steps - chord_steps[k]).min()
-                temp_min_steps += min_note_dist
+#             # find closet note in each chord
+#             for k in range(len(chord_steps)):
+#                 # for each not of the input chord, find the closet
+#                 # tone in the current FM chord
+#                 min_note_dist = np.abs(current_fm_chord_steps - chord_steps[k]).min()
+#                 temp_min_steps += min_note_dist
 
-            if temp_min_steps < min_steps:
-                min_steps = temp_min_steps
-                best_i, best_j = i,j
-                best_carrier = NOTE_VECTOR[i]
-                best_mod = NOTE_VECTOR[j]
-                solutions = [{
-                    "min_steps":min_steps,
-                    "carrier":best_carrier,
-                    "modulator":best_mod,
-                    "i":i,
-                    "j":j
-                }]
+#             if temp_min_steps < min_steps:
+#                 min_steps = temp_min_steps
+#                 best_i, best_j = i,j
+#                 best_carrier = NOTE_VECTOR[i]
+#                 best_mod = NOTE_VECTOR[j]
+#                 solutions = [{
+#                     "min_steps":min_steps,
+#                     "carrier":best_carrier,
+#                     "modulator":best_mod,
+#                     "i":i,
+#                     "j":j
+#                 }]
                 
                 
-            # prioritize carrier closest to lowest note in chord
-            elif temp_min_steps == min_steps:
-                min_steps = temp_min_steps
-                best_i, best_j = i,j
-                best_carrier = NOTE_VECTOR[i]
-                best_mod = NOTE_VECTOR[j]
-                solutions.append({
-                    "min_steps":min_steps,
-                    "carrier":NOTE_VECTOR[i],
-                    "modulator":cur_mod,
-                    "i":i,
-                    "j":j
-                })
-    return solutions
+#             # prioritize carrier closest to lowest note in chord
+#             elif temp_min_steps == min_steps:
+#                 min_steps = temp_min_steps
+#                 best_i, best_j = i,j
+#                 best_carrier = NOTE_VECTOR[i]
+#                 best_mod = NOTE_VECTOR[j]
+#                 solutions.append({
+#                     "min_steps":min_steps,
+#                     "carrier":NOTE_VECTOR[i],
+#                     "modulator":cur_mod,
+#                     "i":i,
+#                     "j":j
+#                 })
+#     return solutions
 
 
 def verify_solutions(chord, solutions):
@@ -327,57 +327,57 @@ def verify_solutions(chord, solutions):
 
 
 
-def closet_fm_chord_vectorized(chord, sidebands=None):
-    """
-    find the closest FM chord to the input chord 
-    when a tie is found give priority to the carrier of the found chord 
-    that is closest to the lowest note of the input chord
-    """
-    fm_chords_steps_w_carrier = None
-    if not sidebands:
-        fm_chords_steps_w_carrier = FM_CHORDS_W_CARRIER_STEPS
-    elif sidebands < MAX_SIDEBANDS:
-        sum_tones = FM_CHORDS_W_CARRIER_STEPS[:,:sidebands,:]
-        diff_tones = FM_CHORDS_W_CARRIER_STEPS[:,:sidebands,:]
-        carrier = FM_CHORDS_W_CARRIER_STEPS[:,MAX_SIDEBANDS * 2:,:]
-        temp = np.hstack((sum_tones, diff_tones))
-        fm_chords_steps_w_carrier = np.hstack((temp, carrier))
+# def closet_fm_chord_vectorized(chord, sidebands=None):
+#     """
+#     find the closest FM chord to the input chord 
+#     when a tie is found give priority to the carrier of the found chord 
+#     that is closest to the lowest note of the input chord
+#     """
+#     fm_chords_steps_w_carrier = None
+#     if not sidebands:
+#         fm_chords_steps_w_carrier = FM_CHORDS_W_CARRIER_STEPS
+#     elif sidebands < MAX_SIDEBANDS:
+#         sum_tones = FM_CHORDS_W_CARRIER_STEPS[:,:sidebands,:]
+#         diff_tones = FM_CHORDS_W_CARRIER_STEPS[:,:sidebands,:]
+#         carrier = FM_CHORDS_W_CARRIER_STEPS[:,MAX_SIDEBANDS * 2:,:]
+#         temp = np.hstack((sum_tones, diff_tones))
+#         fm_chords_steps_w_carrier = np.hstack((temp, carrier))
 
-    chord_steps = np.sort(find_note_vector_position_vectorized(chord, TRUNC_BEG, TRUNC_END))
-    min_steps, candidates = float("+inf"), set()
-    solutions = []
+#     chord_steps = np.sort(find_note_vector_position_vectorized(chord, TRUNC_BEG, TRUNC_END))
+#     min_steps, candidates = float("+inf"), set()
+#     solutions = []
     
-    #find minimium stepwise distance of each chord note to all FM CHORDS
-    for i in range(len(chord_steps)):
-        diff = np.abs(fm_chords_steps_w_carrier - chord_steps[i])
-        min_diff = np.where(diff == diff.min())
-        #add candidate chords to set
-        for idx in range(len(min_diff[0])):
-            candidates.add((min_diff[0][idx], min_diff[2][idx]))
+#     #find minimium stepwise distance of each chord note to all FM CHORDS
+#     for i in range(len(chord_steps)):
+#         diff = np.abs(fm_chords_steps_w_carrier - chord_steps[i])
+#         min_diff = np.where(diff == diff.min())
+#         #add candidate chords to set
+#         for idx in range(len(min_diff[0])):
+#             candidates.add((min_diff[0][idx], min_diff[2][idx]))
     
-    #find minimium stepwise distance of each candidate chord to original chord
-    for candidate in candidates:
-        fm_chord = fm_chords_steps_w_carrier[candidate[0],:,candidate[1]]
-        dist = get_chord_distance(chord_steps, fm_chord)
-        if dist < min_steps:
-            min_steps = dist
-            solutions = [{
-                "min_steps":min_steps,
-                "carrier":NOTE_VECTOR[candidate[0]],
-                "modulator":NOTE_VECTOR[candidate[1]],
-                "i":candidate[0],
-                "j":candidate[1]
-            }]
-        elif dist == min_steps:
-            solutions.append({
-                "min_steps":min_steps,
-                "carrier":NOTE_VECTOR[candidate[0]],
-                "modulator":NOTE_VECTOR[candidate[1]],
-                "i":candidate[0],
-                "j":candidate[1]
-            })
+#     #find minimium stepwise distance of each candidate chord to original chord
+#     for candidate in candidates:
+#         fm_chord = fm_chords_steps_w_carrier[candidate[0],:,candidate[1]]
+#         dist = get_chord_distance(chord_steps, fm_chord)
+#         if dist < min_steps:
+#             min_steps = dist
+#             solutions = [{
+#                 "min_steps":min_steps,
+#                 "carrier":NOTE_VECTOR[candidate[0]],
+#                 "modulator":NOTE_VECTOR[candidate[1]],
+#                 "i":candidate[0],
+#                 "j":candidate[1]
+#             }]
+#         elif dist == min_steps:
+#             solutions.append({
+#                 "min_steps":min_steps,
+#                 "carrier":NOTE_VECTOR[candidate[0]],
+#                 "modulator":NOTE_VECTOR[candidate[1]],
+#                 "i":candidate[0],
+#                 "j":candidate[1]
+#             })
 
-    return sorted(solutions, key=lambda x: (x['carrier'], x['modulator']))
+#     return sorted(solutions, key=lambda x: (x['carrier'], x['modulator']))
 
 
 # # testing - nearest FM
@@ -401,17 +401,17 @@ def closet_fm_chord_vectorized(chord, sidebands=None):
 
 
 
-def calc_roughness_pair(freq_1,freq_2,amp_1=1, amp_2=2):
-    """
-    roughness http://www.acousticslab.org/learnmoresra/moremodel.html
-    """
-    A_min, A_max = np.minimum(amp_1,amp_2), np.maximum(amp_1, amp_2)
-    F_min, F_max = np.minimum(freq_1, freq_2), np.maximum(freq_1, freq_2)
-    X = A_min * A_max
-    Y = 2 * A_min / (A_min + A_max)
-    b1, b2 = 3.5, 5.75
-    s1, s2 = 0.0207, 18.96
-    s = 0.24 / (s1 * F_min + s2)
-    Z = np.exp(-1 * b1 * s *(F_max - F_min)) - np.exp(-b2 * s * (F_max - F_min))
-    R = np.power(X, 0.1) * 0.5 * np.power(Y, 3.11) * Z
-    return R
+# def calc_roughness_pair(freq_1,freq_2,amp_1=1, amp_2=2):
+#     """
+#     roughness http://www.acousticslab.org/learnmoresra/moremodel.html
+#     """
+#     A_min, A_max = np.minimum(amp_1,amp_2), np.maximum(amp_1, amp_2)
+#     F_min, F_max = np.minimum(freq_1, freq_2), np.maximum(freq_1, freq_2)
+#     X = A_min * A_max
+#     Y = 2 * A_min / (A_min + A_max)
+#     b1, b2 = 3.5, 5.75
+#     s1, s2 = 0.0207, 18.96
+#     s = 0.24 / (s1 * F_min + s2)
+#     Z = np.exp(-1 * b1 * s *(F_max - F_min)) - np.exp(-b2 * s * (F_max - F_min))
+#     R = np.power(X, 0.1) * 0.5 * np.power(Y, 3.11) * Z
+#     return R

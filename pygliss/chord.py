@@ -70,7 +70,7 @@ class Chord:
     def closest_note(self, note):
         return self.notes[np.abs(self.notes - note).argmin()]
 
-    def get_notes(self):
+    def to_notes(self):
         return [freq_to_note(self.notes[i]) for i in range(self.length)]
 
     def distance(self, in_chord):
@@ -384,6 +384,8 @@ def calc_roughness(chord_freq):
     """
     Calculates the roughness of a chord frequencies from Vassilakis 2001,2005
     Ampltitude is set constant at 1
+
+    http://www.acousticslab.org/learnmoresra/moremodel.html
 
 
     Parameters

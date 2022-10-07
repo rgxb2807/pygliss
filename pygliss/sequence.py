@@ -1,4 +1,5 @@
 import numpy as np
+from pygliss.chord import Chord
 
 class NoteSequence:
 	"""
@@ -60,11 +61,16 @@ class ChordSequence:
 			s += str(self.chords[i]) + " " + str(self.durations[i]) +"\n"
 		return s
 
+	def to_chord(self):
+		"""Returns list of Chord objects from Chord sequence"""
+		return [Chord(self.chords[i], self.durations[i]) for i in range(self.length)]
+
 
 
 def make_chord_seq_from_note_seq(note_sequences):
     """
-    Returns a ChordSequence all chords from overlapping note sequences 
+    Returns a ChordSequence all chords from overlapping note sequences
+
     
     Parameters
 	----------

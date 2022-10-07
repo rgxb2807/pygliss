@@ -329,7 +329,7 @@ def freq_to_note(freq):
 	"""
 	asc_dict = asc_notes_dict()
 	octave = 0
-	rounded_freq = round(freq, 8)
+	rounded_freq = np.around(freq, 8)
 	if rounded_freq >= round(asc_dict['C9'].frequency(), 8):
 		octave = 9
 	elif rounded_freq >= round(asc_dict['C8'].frequency(), 8):

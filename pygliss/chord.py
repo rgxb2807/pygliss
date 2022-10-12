@@ -140,9 +140,42 @@ class OvertoneChord(Chord):
     def fundamental_note(self):
         return freq_to_note(self.fundamental)
 
+    def get_partials(self, note=None, m=26, include_fund=False):
+        """
+        Returns the partials or overtone based on the specified note
+        m is the number of partials
+        Set `include_fund` = True to include the fundamental
 
 
-MAX_SIDEBANDS = 20
+        The fundamental is used when the note is note specified.
+
+        """
+        partials = self.fundamental * np.arange(1, m + 1)
+        if note: 
+            partials = note * np.arange(1, m + 1)
+        return partials if include_fund else partials[1:]
+
+    def chord_partials(self, m=26, return_partials=False):
+        """
+        Returns the partials or overtone of the chord
+        Set `return_partials` = True to return the partial numbers
+
+
+        The fundamental is used when the note is note specified.
+
+        """
+
+        note_positions = find_note_vector_position_vectorized(self.notes)
+        partials = self.get_partials(m=m, include_fund=True)
+        ot_positions = find_note_vector_position_vectorized(partials)
+        tones, _, ot =  np.intersect1d(note_positions, ot_positions, return_indices=True)
+        if return_partials:
+            return ot + 1
+        return NOTE_VECTOR[tones]
+
+
+
+MAX_SIDEBANDS = 25
 FREQ_MODULATORS = np.outer(np.arange(1, MAX_SIDEBANDS+1), NOTE_VECTOR)
 SUM_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
 DIFF_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
@@ -231,7 +264,7 @@ class FMChord(Chord):
             indicies[0] = -1
         if np.isclose(self.modulator, HIGH):
             indicies[1] = -1
-        return FM_CHORDS[indicies[0],:sidebands,indicies[1]]
+        return FM_CHORDS[indicies[0],:MAX_SIDEBANDS,indicies[1]]
 
 
     def diff_tones(self):
@@ -245,7 +278,7 @@ class FMChord(Chord):
             indicies[0] = -1
         if np.isclose(self.modulator, HIGH):
             indicies[1] = -1
-        return FM_CHORDS[indicies[0],sidebands:,indicies[1]]
+        return FM_CHORDS[indicies[0],MAX_SIDEBANDS:,indicies[1]]
 
     def fm_tones(self):
         """Returns all sum and difference tones from carrier and modulator"""
@@ -261,13 +294,30 @@ class FMChord(Chord):
         return FM_CHORDS[indicies[0], :, indicies[1]]
 
 
-    def chord_sum_tones(self):
-        """Returns chord notes that are sum tones from carrier and modulator"""
-        return np.intersect1d(self.notes, self.sum_tones())
+    def chord_sum_tones(self,return_sb=False):
+        """
+        Returns chord notes that are sum tones from carrier and modulator
+        Set `return_sb` = True to return sideband values
+        """
+        note_positions = find_note_vector_position_vectorized(self.notes)
+        sum_tone_positions = find_note_vector_position_vectorized(self.sum_tones())
+        tones, _, sb =  np.intersect1d(note_positions, sum_tone_positions, return_indices=True)
+        if return_sb:
+            return sb + 1
+        return NOTE_VECTOR[tones]
 
-    def chord_diff_tones(self):
-        """Returns chord notes that are difference tones from carrier and modulator"""
-        return np.intersect1d(self.notes, self.diff_tones())
+    def chord_diff_tones(self, return_sb=False):
+        """
+        Returns chord notes that are difference tones from carrier and modulator
+        Set `return_sb` = True to return sideband values
+        """
+        note_positions = find_note_vector_position_vectorized(self.notes)
+        diff_tone_positions = find_note_vector_position_vectorized(self.diff_tones())
+        # return np.intersect1d(self.notes, self.sum_tones())
+        tones, _, sb =  np.intersect1d(note_positions, diff_tone_positions, return_indices=True)
+        if return_sb:
+            return sb + 1
+        return NOTE_VECTOR[tones]
 
     def missing_sum_tones(self):
         """Returns sum tones from carrier and modulator not in the chord notes"""
@@ -356,7 +406,7 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
         subharmonics = chord_freq[i] * (1 / np.arange(1, m + 1))
         # filter values lower than human hearing
         subharmonics = np.where(subharmonics >= LOW, subharmonics, -1)
-        harmonics = np.rint(chord_freq / subharmonics[:,np.newaxis])
+        harmonics = np.rint(chord_freq / subharmonics[:,np.newaxis]) # should this be chord_freq[i] ?????
         chords = harmonics * subharmonics[:, np.newaxis]
         all_chord_sets[i] = chords
         
@@ -483,4 +533,42 @@ def nearest_fm_chord(chord_freq, sidebands=None):
             })
 
     return sorted(solutions, key=lambda x: (x['roughness'], x['fm_chord'].carrier, x['fm_chord'].modulator))
+
+
+
+def filter_fm_ot_chords(chords, ot_subharm=12, ot_dist=0, fm_roughness=10):
+
+    """
+    Given a list of chord obects, it returns candidates of nearest overtone chord 
+    and nearest fm chords based on specified parameters
+
+    Returns dictionary of solutions
+
+    """
+    solutions = []
+    for idx, chord in enumerate(chords):
+        candidate_chords = []
+        fm_solutions = nearest_fm_chord(chord.notes)
+        for sol in fm_solutions:
+            if sol['roughness'] <= fm_roughness:
+                candidate_chords.append({
+                    "type":"fm",
+                    "full_roughness":sol['roughness'],
+                    "roughness":calc_roughness(sol['fm_chord'].notes),
+                    "chord":sol['fm_chord']
+                })           
+        ot = nearest_ot_chord(chord.notes, ot_subharm)
+        if ot.distance(chord) <= ot_dist:
+            candidate_chords.append({
+                "type":"ot",
+                "roughness":calc_roughness(ot.notes),
+                "chord":ot,
+                "full_roughness":None
+            })
+        if len(candidate_chords) > 0:
+            solutions.append({
+                "candidates":candidate_chords,
+                "idx":idx
+            })
+    return solutions
 

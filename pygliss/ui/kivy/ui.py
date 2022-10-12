@@ -37,7 +37,7 @@ test_chords = np.array([
 
 
 
-g1 = Gliss(110.0, 220.0)
+g1 = Gliss(220.0, 110.0)
 g2 = Gliss(220.0, 330.0)
 g3 = Gliss(440.0, 330.0)
 g4 = Gliss(440.0, 660.0)

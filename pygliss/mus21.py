@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from pygliss.note import Note
+from pygliss.note import Note, freq_to_note
 from music21 import pitch, corpus, midi, stream, tempo, duration, note as m21note, tie
 
 
@@ -37,7 +37,7 @@ def chord_stream(chords, bpm=60, length=0.25):
 	parts.append(tempo.MetronomeMark(number=bpm))
 	for chord in chords:
 		for idx, note in enumerate(chord.notes):
-			parts[idx].append(m21note.Note(get_mus21_pitch(note), 
+			parts[idx].append(m21note.Note(get_mus21_pitch(freq_to_note(note)), 
 				quarterLength=length))
 	
 	s = stream.Stream(parts)

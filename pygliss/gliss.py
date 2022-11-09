@@ -89,6 +89,8 @@ class Gliss(NoteSequence):
 		    low_idx = (np.abs(note_vector - low)).argmin()
 		    high_idx = (np.abs(note_vector - high)).argmin()
 		    notes = note_vector[low_idx:high_idx]
+		    if low_idx == high_idx:
+		    	notes = [note_vector[low_idx]]
 		    self.length = len(notes)
 		    
 		    # Reverse order of list if gliss descends

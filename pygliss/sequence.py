@@ -83,7 +83,6 @@ def make_chord_seq_from_note_seq(note_sequences):
 			ChordSequence generated from note_sequences
 
     """
-
     # Get time values
     time_tuple = ([seq.time_val for seq in note_sequences])
     time_vals = np.sort(np.unique(np.concatenate((time_tuple))))
@@ -99,7 +98,9 @@ def make_chord_seq_from_note_seq(note_sequences):
     for seq_idx, seq in enumerate(note_sequences):
         seq_time_idx = 1
         for idx, time_val in enumerate(time_vals):
-            if seq.time_val[seq_time_idx] > time_val:
+            if len(seq.time_val) == 1:
+                chords[idx, seq_idx] = seq.notes[0]
+            elif seq.time_val[seq_time_idx] > time_val:
                 chords[idx, seq_idx] = seq.notes[seq_time_idx - 1]
             else:
                 if (seq_time_idx + 1) < seq.length:

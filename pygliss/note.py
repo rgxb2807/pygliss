@@ -74,24 +74,37 @@ class Note:
 		return self.freq
 
 
-def lily(the_note):
-	"""Sets Lilypond accidentals."""
-	s = the_note.note.lower()
-	if the_note.accidental == '+':
-		s += 'qs'
-	elif the_note.accidental == '#':
-		s += 's'
-	elif the_note.accidental == '++':
-		s += 'tqs'
-	elif the_note.accidental == '-':
-		s += 'qf'
-	elif the_note.accidental == 'b':
-		s += 'b'
-	elif the_note.accidental == '--':
-		s += 'tqf'
-	else:
-		pass
-	return s
+def get_note(note_str):
+	"""format "Note Name" + "Accidental"  + "Octave"  """
+	note_name = note_str[:1]
+	if len (note_str) == 2:
+		return Note(note_name, int(note_str[1:2]))
+
+	if len(note_str) == 3:
+		return Note(note_name, int(note_str[2:3]), note_str[1:2])
+
+	if len(note_str) == 4:
+		return Note(note_name, int(note_str[3:4]), note_str[1:3])
+
+
+# def lily(the_note):
+# 	"""Sets Lilypond accidentals."""
+# 	s = the_note.note.lower()
+# 	if the_note.accidental == '+':
+# 		s += 'qs'
+# 	elif the_note.accidental == '#':
+# 		s += 's'
+# 	elif the_note.accidental == '++':
+# 		s += 'tqs'
+# 	elif the_note.accidental == '-':
+# 		s += 'qf'
+# 	elif the_note.accidental == 'b':
+# 		s += 'b'
+# 	elif the_note.accidental == '--':
+# 		s += 'tqf'
+# 	else:
+# 		pass
+# 	return s
 
 
 def get_note_steps(note):

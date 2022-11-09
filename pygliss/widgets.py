@@ -9,6 +9,7 @@ import ipywidgets as widgets
 import numpy as np
 import pygame
 import scipy
+import copy
 
 class ChordToggle:
     
@@ -131,10 +132,11 @@ class FilteredChordsToggle:
         self.sol_idx = 0
 
         self.candidates = candidates
+        self.reset_candidates  = copy.deepcopy(candidates)
         self.cand_type = self.candidates[self.cand_idx]["candidates"][self.sol_idx]['type']
         self.length = len(candidates)
         self.streams = [chord_stream([c["candidates"][0]['chord']], length=0.75) for c in candidates]
-        self.sequence = []
+        self.sequence = saved
 
         self.mode = "only_play"
         self.playback_type = 'sin'
@@ -145,7 +147,8 @@ class FilteredChordsToggle:
 
 
     def chord_info(self):
-        return f"{self.current_chord.notes} type:{self.cand_type} idx:{self.cand_idx}"
+        note_strs = [str(freq_to_note(n)) for n in self.current_chord.notes]
+        return f"{' '.join(note_strs)} type:{self.cand_type} idx:{self.cand_idx}"
 
     def solution_info(self):
         t = self.candidates[self.cand_idx]["candidates"][self.sol_idx]['type']
@@ -166,8 +169,8 @@ class FilteredChordsToggle:
                 s += f"diff sidebands:{diff_tones}\n"
         elif t =="ot":
             fund = self.candidates[self.cand_idx]["candidates"][self.sol_idx]['chord'].fundamental
-            partials = self.candidates[self.cand_idx]["candidates"][self.sol_idx]['chord'].chord_partials(return_partials=True)
-            s += f"{c.notes} type:{t} fund:{fund} sol:{self.sol_idx + 1} of {sol_len}\n"
+            partials = self.candidates[self.cand_idx]["candidates"][self.sol_idx]['chord'].chord_partials(m=50, return_partials=True)
+            s += f"{c.notes} type:{t} fund:{freq_to_note(fund)} sol:{self.sol_idx + 1} of {sol_len}\n"
             s += f"partials:{partials}"
 
         
@@ -227,13 +230,27 @@ class FilteredChordsToggle:
         return self.mode
 
     def insert_chord(self):
-        pass
+        self.sequence.append(self.current_chord)
+        if len(self.sequence) > 1:
+            self.seq_idx += 1
 
     def remove_chord(self):
-        pass
+        if len(self.sequence) > 0:
+            self.sequence.pop(self.seq_idx)
+            self.seq_idx -= 1
 
     def reset_chord(self):
-        pass
+        c = copy.deepcopy(self.reset_candidates[self.cand_idx]["candidates"][self.sol_idx]['chord'])
+        self.current_chord = c
+        self.candidates[self.cand_idx]["candidates"][self.sol_idx]['chord'] = c
+
+
+    def seq_info(self):
+        return " ".join([str(c) for c in self.sequence])
+
+    def seq_chord_info(self):
+        return f"{self.sequence[self.seq_idx]}"
+
 
 
     def play_sum_tone(self, sb=1):
@@ -547,31 +564,54 @@ class FilteredChordsToggleButtons:
         self.grid[-3,0].on_click(reset_chord)
 
 
+        self.grid[-1,-2] = create_button('Sequence Info'.format(""), 'info')
+        def seq_info(b):
+            with self.output:
+                clear_output()
+                print(self.toggle.seq_info())
+        self.grid[-1,-2].on_click(seq_info)
+        
+        self.grid[-1,-3] = create_button('Seq Chord Info'.format(""), 'info')
+        def seq_chord_info(b):
+            with self.output:
+                clear_output()
+                print(self.toggle.seq_chord_info())
 
 
+        self.grid[-1,-3].on_click(seq_chord_info)
+
+
+        self.grid[-2,-1] = create_button('- Play Seq Chord - '.format(""), 'info')
+        self.grid[-1,-1] = create_button('- Play Sequence - '.format(""), 'primary')
+        self.grid[-2,-2] = create_button('Next'.format(""), 'success')
+        self.grid[-2,-3] = create_button('Prev'.format(""), 'success')
+
+
+
+        tone_idx = 1
         #FM tones
         for i in range(10):
             for j in range(5):
-                if self.tone_idx <= 25:
+                if tone_idx <= 25:
                     self.tone_type = "fm_sum"
-                    b = create_button('Sum - sb {}'.format(self.tone_idx), 'info')
+                    b = create_button('Sum - sb {}'.format(tone_idx), 'info')
                     self.grid[i, j] = b
                 else:
                     self.tone_type = "fm_diff"
-                    b = create_button('Diff - sb {}'.format(self.tone_idx-25), 'success')
+                    b = create_button('Diff - sb {}'.format(tone_idx-25), 'success')
                     self.grid[i, j] = b
-                self.tone_idx += 1
+                tone_idx += 1
         
         #OT tones
-        self.tone_idx = 1
+        tone_idx = 1
         self.tone_type = "ot_par"
         for i in range(10, 15):
             for j in range(5):
-                b = create_button('OT - Partial {}'.format(self.tone_idx), 'primary')
-                if self.tone_idx == 1:
+                b = create_button('OT - Partial {}'.format(tone_idx), 'primary')
+                if tone_idx == 1:
                     b = create_button('- Fundamental - '.format(""), 'warning')
                 self.grid[i, j] = b
-                self.tone_idx += 1
+                tone_idx += 1
 
 
     

@@ -1,8 +1,26 @@
 import numpy as np
 import math
 from pygliss.note import Note, freq_to_note
-from music21 import pitch, corpus, midi, stream, tempo, duration, note as m21note, tie
+from music21 import pitch, corpus, midi, stream, tempo, duration, note as m21note, tie, chord
 
+
+
+def get_mus21_pitch_str(note):
+	"""Convert pygliss.note to music21.pitch."""
+	if note.accidental == '+':
+		return note.note + "~" + str(note.octave)
+	elif note.accidental == '#':
+		return note.note + "#" + str(note.octave)
+	elif note.accidental == '++':
+		return note.note + "#~" + str(note.octave)
+	elif note.accidental == '-':
+		return note.note + "`" + str(note.octave)
+	elif note.accidental == 'b':
+		return note.note + "-" + str(note.octave)
+	elif note.accidental == '--':
+		return note.note + "-`" + str(note.octave)
+	else:
+		return note.note + str(note.octave)
 
 def get_mus21_pitch(note):
 	"""Convert pygliss.note to music21.pitch."""
@@ -348,4 +366,63 @@ def play_stream(s):
 def write_stream(s, filename):
 	s.write("musicxml", filename + ".musicxml")
 	return True
+
+
+
+def get_mus21_chord(chord):
+	m21chord = []
+	for idx, note in enumerate(chord.notes):
+			m21chord.append(get_mus21_pitch_str(freq_to_note(note)))
+	return chord.Chord(m21chord)
+
+
+def get_chord_arp_stream(chords, bpm=60, length=0.25):
+	parts = [stream.Part(), stream.Part()]
+	parts.append(tempo.MetronomeMark(number=bpm))
+	for chord in chords:
+		for idx, note in enumerate(chord.notes):
+			n = m21note.Note(get_mus21_pitch(freq_to_note(note)), 
+				quarterLength=length)
+
+			if note > 261:
+				parts[1].append(m21note.Rest(quarterLength=length))
+				parts[0].append(n)
+
+			else:
+				parts[1].append(n)
+				parts[0].append(m21note.Rest(quarterLength=length))
+		parts[0].append(m21note.Rest())
+		parts[1].append(m21note.Rest())
+	
+	s = stream.Stream(parts)
+	return s
+
+def get_chord_stream(chords, bpm=60, length=0.25):
+	parts = [stream.Part(), stream.Part()]
+	parts.append(tempo.MetronomeMark(number=bpm))
+	for c in chords:
+		m21chord_high = []
+		m21chord_low = []
+		for idx, note in enumerate(c.notes):
+			n = get_mus21_pitch_str(freq_to_note(note))
+			if note > 261:
+				m21chord_high.append(n)
+			else:
+				m21chord_low.append(n)
+		
+		if len(m21chord_high) == 0:
+			parts[0].append(m21note.Rest())
+		else:
+			parts[0].append(chord.Chord(m21chord_high))
+
+		if len(m21chord_low) == 0:
+			parts[1].append(m21note.Rest())
+		else:
+			parts[1].append(chord.Chord(m21chord_low))
+
+
+
+
+	s = stream.Stream(parts)
+	return s
 

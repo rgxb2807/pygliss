@@ -109,3 +109,6 @@ class Gliss(NoteSequence):
 		# initialize parent class
 		calc_gliss(self)
 
+	def __str__ (self):
+		return f"{self.notes}"
+

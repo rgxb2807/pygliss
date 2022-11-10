@@ -1,6 +1,6 @@
 from pygliss.sequence import ChordSequence, make_chord_seq_from_note_seq
 from pygliss.gliss import Gliss
-
+from pygliss.note import get_note
 
 class GlissCmpr(ChordSequence):
     """
@@ -60,3 +60,24 @@ def make_gliss_cmpr_sequence(note_matrix):
         chord_sequences.append(GlissCmpr(glissandi))
     return chord_sequences
 
+
+
+def get_note_mat_from_str(mat):
+    """
+    Returns a 2D of frequency matrix from a 2D list of note strings
+    
+    The format of a note string is "Bb4" or "F++4"
+    
+    Parameters
+    ----------
+        mat : 2D list of list of strings
+
+    Returns
+    -------
+        freq_mat : 2D numpy.ndarray[numpy.float64] 
+    """
+    freq_mat = np.zeros((len(mat), len(mat[0])))
+    for  i, row in enumerate(mat):
+        for j, note_str in enumerate(row):
+            freq_mat[i,j] = get_note(note_str).frequency()
+    return freq_mat

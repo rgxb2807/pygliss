@@ -98,12 +98,16 @@ def make_chord_seq_from_note_seq(note_sequences):
     for seq_idx, seq in enumerate(note_sequences):
         seq_time_idx = 1
         for idx, time_val in enumerate(time_vals):
+        	# gliss is 1 note
             if len(seq.time_val) == 1:
                 chords[idx, seq_idx] = seq.notes[0]
+            # last note in sequence
+            elif seq_time_idx == seq.length:
+                chords[idx, seq_idx] = seq.notes[seq_time_idx - 1]
             elif seq.time_val[seq_time_idx] > time_val:
                 chords[idx, seq_idx] = seq.notes[seq_time_idx - 1]
             else:
-                if (seq_time_idx + 1) < seq.length:
+                if seq_time_idx < seq.length:
                     seq_time_idx += 1
                 chords[idx, seq_idx] = seq.notes[seq_time_idx - 1]
     

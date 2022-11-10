@@ -47,7 +47,7 @@ class Chord:
                 the end note of the gliss
         """
 
-        self.notes = notes
+        self.notes = np.sort(notes)
         self.duration = duration
         self.length = len(notes)
         self.steps = find_note_vector_position_vectorized(notes)
@@ -71,7 +71,7 @@ class Chord:
         return self.notes[np.abs(self.notes - note).argmin()]
 
     def to_notes(self):
-        return [freq_to_note(self.notes[i]) for i in range(self.length)]
+        return [freq_to_note(self.notes[i]) for i in range(len(self.notes))]
 
     def distance(self, in_chord):
         """
@@ -175,7 +175,7 @@ class OvertoneChord(Chord):
 
 
 
-MAX_SIDEBANDS = 25
+MAX_SIDEBANDS = 30
 FREQ_MODULATORS = np.outer(np.arange(1, MAX_SIDEBANDS+1), NOTE_VECTOR)
 SUM_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
 DIFF_TONES = np.zeros((len(NOTE_VECTOR), MAX_SIDEBANDS, len(NOTE_VECTOR)))
@@ -537,7 +537,6 @@ def nearest_fm_chord(chord_freq, sidebands=None):
 
 
 def filter_fm_ot_chords(chords, ot_subharm=12, ot_dist=0, fm_roughness=10):
-
     """
     Given a list of chord obects, it returns candidates of nearest overtone chord 
     and nearest fm chords based on specified parameters
@@ -558,10 +557,20 @@ def filter_fm_ot_chords(chords, ot_subharm=12, ot_dist=0, fm_roughness=10):
                     "chord":sol['fm_chord']
                 })           
         ot = nearest_ot_chord(chord.notes, ot_subharm)
-        if ot.distance(chord) <= ot_dist:
+        cur_ot_dist = ot.distance(chord)
+        if cur_ot_dist <= ot_dist:
+            
+            # include original chord
+            if cur_ot_dist != 0:
+                candidate_chords.append({
+                    "type":f"ot_dist_{cur_ot_dist}",
+                    "roughness":None,
+                    "chord":chord,
+                    "full_roughness":None
+                })
             candidate_chords.append({
                 "type":"ot",
-                "roughness":calc_roughness(ot.notes),
+                "roughness":None,
                 "chord":ot,
                 "full_roughness":None
             })

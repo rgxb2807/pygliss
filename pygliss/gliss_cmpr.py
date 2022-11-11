@@ -1,6 +1,7 @@
 from pygliss.sequence import ChordSequence, make_chord_seq_from_note_seq
 from pygliss.gliss import Gliss
 from pygliss.note import get_note
+import numpy as np
 
 class GlissCmpr(ChordSequence):
     """

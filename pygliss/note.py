@@ -1,4 +1,4 @@
-from pygliss.constants import DIVISIONS, BASE, A440
+from pygliss.constants import DIVISIONS, BASE, A440, HIGH, LOW
 from pygliss.utils import make_freq_vector
 import numpy as np
 
@@ -87,25 +87,6 @@ def get_note(note_str):
 		return Note(note_name, int(note_str[3:4]), note_str[1:3])
 
 
-# def lily(the_note):
-# 	"""Sets Lilypond accidentals."""
-# 	s = the_note.note.lower()
-# 	if the_note.accidental == '+':
-# 		s += 'qs'
-# 	elif the_note.accidental == '#':
-# 		s += 's'
-# 	elif the_note.accidental == '++':
-# 		s += 'tqs'
-# 	elif the_note.accidental == '-':
-# 		s += 'qf'
-# 	elif the_note.accidental == 'b':
-# 		s += 'b'
-# 	elif the_note.accidental == '--':
-# 		s += 'tqf'
-# 	else:
-# 		pass
-# 	return s
-
 
 def get_note_steps(note):
 	"""Gets associated steps for a given note."""
@@ -164,121 +145,6 @@ def get_accidental_steps(accidental):
 	return steps
 
 
-def next_qtr_note(the_note):
-	"""Returns the next note in an ascending quarter-tone scale."""
-	note = the_note.note
-	octave = the_note.octave
-	accidental = the_note.accidental
-
-	if accidental == None:
-		if note == 'B' and DIV == 1:
-			if octave < HIGH_OCTAVE:
-				return Note('C', octave + 1)
-			else:
-				return None
-		elif note == 'E' and DIV == 1:
-			return Note('F', octave)
-		else:
-			return Note(note, octave, '+')
-
-	elif accidental == '+':
-		if note == 'B':
-			if octave < HIGH_OCTAVE:
-				return Note('C', octave + 1)
-			else:
-				return None
-		elif note == 'E':
-			return Note('F', octave)
-		else:
-			return Note(note, octave, '#')
-
-	elif accidental == '#':
-		if DIV == 1:
-			idx = NOTE_NAMES.index(note)
-			if idx == 6:
-				return Note('A', octave)
-			else:
-				return Note(NOTE_NAMES[idx + 1], octave)
-		elif DIV == 2:
-			return Note(note, octave, '++')
-		else:
-			return None
-
-	elif accidental == '++':
-		idx = NOTE_NAMES.index(note)
-		if idx == 6:
-			return Note('A', octave)
-		else:
-			return Note(NOTE_NAMES[idx + 1], octave)
-
-	elif accidental == '-':
-		return Note(note, octave)
-	elif accidental == 'b':
-		return Note(note, octave, '-')
-	elif accidental == '--':
-		return Note(note, octave, 'b')
-	else:
-	    return None
-
-
-def prev_qtr_note(the_note):
-	"""Returns the previous note in an descending quarter-tone scale."""
-	note = the_note.note
-	octave = the_note.octave
-	accidental = the_note.accidental
-
-	if accidental == None:
-		if note == 'C' and octave > LOW_OCTAVE:
-			return Note('B', octave - 1, '+')
-		elif note == 'F':
-			return Note('E', octave, '+')
-		else:
-			return Note(note, octave, '-')
-	elif accidental == '+':
-		return Note(note, octave)
-	elif accidental == '#':
-		return Note(note, octave, '+')
-	elif accidental == '++':
-		return Note(note, octave, '#')
-	elif accidental == '-':
-		return Note(note, octave, 'b')
-	elif accidental == 'b':
-		return Note(note, octave, '--')
-	elif accidental == '--':
-		idx = NOTE_NAMES.index(note)
-		if idx == 0:
-			return Note('G', octave)
-		elif idx == 2:
-			return Note(NOTE_NAMES[idx - 1], octave - 1)
-		else:
-			return Note(NOTE_NAMES[idx - 1], octave)
-	else:
-		return None
-
-
-def next_note(the_note, resolution=1):
-	"""
-	returns the next note based on the number of quarter tone steps specified 
-	in the resolution.
-	"""
-	count = 0
-	while count < resolution:
-		the_note = next_qtr_note(the_note)
-		count += 1
-	return the_note
-
-
-def prev_note(the_note, resolution=1):
-	"""
-	returns the previous note based on the number of quarter tone steps 
-	specified in the resolution.
-	"""
-	count = 0
-	while count < resolution:
-		the_note = prev_qtr_note(the_note)
-		count += 1
-	return the_note
-
  
 def get_steps(note, octave, accidental):
 	"""returns number of steps based on the number of divisions."""
@@ -287,200 +153,27 @@ def get_steps(note, octave, accidental):
 	steps += get_accidental_steps(accidental)
 
 
-def asc_notes_dict(low=Note('C', 0), high=Note('C', 9), resolution=1):
-	"""Returns a dict of ascending notes."""
-	notes_dict = dict()
-	current_note = low
-	while(current_note.frequency() <= high.frequency()):
-		current_note.Prev = current_note
-		current_note.Next = next_note(current_note, resolution)
-		notes_dict[str(current_note)] = current_note
-		current_note = current_note.Next
-	return notes_dict
-
-
-def desc_notes_dict(low=Note('C', 0), high=Note('C', 9), resolution=1):
-	"""Returns a dict of descending notes."""
-	notes_dict = dict()
-	current_note = high
-	while(current_note.frequency() >= low.frequency()):
-		current_note.Next = current_note
-		current_note.Prev = prev_note(current_note, resolution)
-		notes_dict[str(current_note)] = current_note
-		current_note = current_note.Prev
-
-	return notes_dict
-
-def asc_notes_list(low=Note('C', 0), high=Note('C', 9), resolution=1):
-	"""Returns a list of ascending notes."""
-	notes_list = list()
-	current_note = low
-	while(current_note.frequency() <= high.frequency()):
-		current_note.Prev = current_note
-		current_note.Next = next_note(current_note, resolution)
-		notes_list.append(current_note)
-		current_note = current_note.Next
-	return notes_list
-
-
-def desc_notes_list(low=Note('C', 0), high=Note('C', 9), resolution=1):
-	"""Returns a list of descending notes."""
-	notes_list = list()
-	current_note = high
-	while(current_note.frequency() >= low.frequency()):
-		current_note.Next = current_note
-		current_note.Prev = prev_note(current_note, resolution)
-		notes_list.append(current_note)
-		current_note = current_note.Prev
-	return notes_list
-
-
 def freq_to_note(freq):
 	"""
 	Returns a note object based on a given frequency with quartertone 
 	precision.
 	"""
-	asc_dict = asc_notes_dict()
-	octave = 0
-	rounded_freq = np.around(freq, 8)
-	if rounded_freq >= round(asc_dict['C9'].frequency(), 8):
-		octave = 9
-	elif rounded_freq >= round(asc_dict['C8'].frequency(), 8):
-		octave = 8
-	elif rounded_freq >= round(asc_dict['C7'].frequency(), 8):
-		octave = 7
-	elif rounded_freq >= round(asc_dict['C6'].frequency(), 8):
-		octave = 6
-	elif rounded_freq >= round(asc_dict['C5'].frequency(), 8):
-		octave = 5
-	elif rounded_freq >= round(asc_dict['C4'].frequency(), 8):
-		octave = 4
-	elif rounded_freq >= round(asc_dict['C3'].frequency(), 8):
-		octave = 3
-	elif rounded_freq >= round(asc_dict['C2'].frequency(), 8):
-		octave = 2
-	elif rounded_freq >= round(asc_dict['C1'].frequency(), 8):
-		octave = 1
-	else:
-		octave = 0
+	if freq < LOW or freq > HIGH:
+		return None
 
-	diff = float('inf')
-	note_str = ""
-	accidental = None
-	comp = freq / (2 ** octave)
+	note_position = find_note_vector_position_vectorized(freq)
+	octave = int(np.floor(note_position / DIVISIONS))
+	note_idx = int(note_position - octave * DIVISIONS)
+	
+	note_names = ["C", "C", "C", "C", "D", "D", "D", "D", "E", "E", "F", "F",
+	"F", "F", "G", "G", "G", "G", "A", "A", "A", "A", "B", "B"]
+	accidentals = [None, "+", "#", "++", None, "+", "#", "++", None, "+", None, "+",
+	"#", "++", None, "+", "#", "++", None, "+", "#", "++", None, "+"]
+	
+	if DIVISIONS == 12:
+		note_idx = note_idx * 2
 
-	#C
-	if abs(comp - asc_dict['C0'].frequency()) < diff:
-		diff = abs(comp - asc_dict['C0'].frequency())
-		note_str = "C"
-		accidental = None
-	if abs(comp - asc_dict['C0+'].frequency()) < diff:
-		diff = abs(comp - asc_dict['C0+'].frequency())
-		note_str = "C"
-		accidental = "+"
-	if abs(comp - asc_dict['C0#'].frequency()) < diff:
-		diff = abs(comp - asc_dict['C0#'].frequency())
-		note_str = "C"
-		accidental = "#"
-	if abs(comp - asc_dict['C0++'].frequency()) < diff:
-		diff = abs(comp - asc_dict['C0++'].frequency())
-		note_str = "C"
-		accidental = "++"
-
-	#D
-	if abs(comp - asc_dict['D0'].frequency()) < diff:
-		diff = abs(comp - asc_dict['D0'].frequency())
-		note_str = "D"
-		accidental = None
-	if abs(comp - asc_dict['D0+'].frequency()) < diff:
-		diff = abs(comp - asc_dict['D0+'].frequency())
-		note_str = "D"
-		accidental = "+"
-	if abs(comp - asc_dict['D0#'].frequency()) < diff:
-		diff = abs(comp - asc_dict['D0#'].frequency())
-		note_str = "D"
-		accidental = "#"
-	if abs(comp - asc_dict['D0++'].frequency()) < diff:
-		diff = abs(comp - asc_dict['D0++'].frequency())
-		note_str = "D"
-		accidental = "++"
-
-	#E
-	if abs(comp - asc_dict['E0'].frequency()) < diff:
-		diff = abs(comp - asc_dict['E0'].frequency())
-		note_str = "E"
-		accidental = None
-	if abs(comp - asc_dict['E0+'].frequency()) < diff:
-		diff = abs(comp - asc_dict['E0+'].frequency())
-		note_str = "E"
-		accidental = "+"
-
-	#F
-	if abs(comp - asc_dict['F0'].frequency()) < diff:
-		diff = abs(comp - asc_dict['F0'].frequency())
-		note_str = "F"
-		accidental = None
-	if abs(comp - asc_dict['F0+'].frequency()) < diff:
-		diff = abs(comp - asc_dict['F0+'].frequency())
-		note_str = "F"
-		accidental = "+"
-	if abs(comp - asc_dict['F0#'].frequency()) < diff:
-		diff = abs(comp - asc_dict['F0#'].frequency())
-		note_str = "F"
-		accidental = "#"
-	if abs(comp - asc_dict['F0++'].frequency()) < diff:
-		diff = abs(comp - asc_dict['F0++'].frequency())
-		note_str = "F"
-		accidental = "++"
-
-	#G
-	if abs(comp - asc_dict['G0'].frequency()) < diff:
-		diff = abs(comp - asc_dict['G0'].frequency())
-		note_str = "G"
-		accidental = None
-	if abs(comp - asc_dict['G0+'].frequency()) < diff:
-		diff = abs(comp - asc_dict['G0+'].frequency())
-		note_str = "G"
-		accidental = "+"
-	if abs(comp - asc_dict['G0#'].frequency()) < diff:
-		diff = abs(comp - asc_dict['G0#'].frequency())
-		note_str = "G"
-		accidental = "#"
-	if abs(comp - asc_dict['G0++'].frequency()) < diff:
-		diff = abs(comp - asc_dict['G0++'].frequency())
-		note_str = "G"
-		accidental = "++"
-
-	#A
-	if abs(comp - asc_dict['A0'].frequency()) < diff:
-		diff = abs(comp - asc_dict['A0'].frequency())
-		note_str = "A"
-		accidental = None
-	if abs(comp - asc_dict['A0+'].frequency()) < diff:
-		diff = abs(comp - asc_dict['A0+'].frequency())
-		note_str = "A"
-		accidental = "+"
-	if abs(comp - asc_dict['A0#'].frequency()) < diff:
-		diff = abs(comp - asc_dict['A0#'].frequency())
-		note_str = "A"
-		accidental = "#"
-	if abs(comp - asc_dict['A0++'].frequency()) < diff:
-		diff = abs(comp - asc_dict['A0++'].frequency())
-		note_str = "A"
-		accidental = "++"
-
-	#B
-	if abs(comp - asc_dict['B0'].frequency()) < diff:
-		diff = abs(comp - asc_dict['B0'].frequency())
-		note_str = "B"
-		accidental = None
-	if abs(comp - asc_dict['B0+'].frequency()) < diff:
-		diff = abs(comp - asc_dict['B0+'].frequency())
-		note_str = "B"
-		accidental = "+"
-
-	return Note(note_str, octave, accidental)
-
+	return Note(note_names[note_idx], octave, accidentals[note_idx])
 
 def get_partial(note, fundamental):
 	return note.frequency() / fundamental.frequency()

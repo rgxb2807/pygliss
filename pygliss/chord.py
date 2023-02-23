@@ -71,7 +71,13 @@ class Chord:
         return self.notes[np.abs(self.notes - note).argmin()]
 
     def to_notes(self):
-        return [freq_to_note(self.notes[i]) for i in range(len(self.notes))]
+        note_objs = []
+        for i in range(len(self.notes)):
+            n = freq_to_note(self.notes[i])
+            if n is None:
+                continue
+            note_objs.append(n)
+        return note_objs
 
     def distance(self, in_chord):
         """
@@ -321,11 +327,11 @@ class FMChord(Chord):
 
     def missing_sum_tones(self):
         """Returns sum tones from carrier and modulator not in the chord notes"""
-        return np.setdiff1d(self.chord_sum_tones, self.sum_tones())
+        return np.setdiff1d(self.chord_sum_tones(), self.sum_tones())
 
     def missing_diff_tones(self):
         """Returns difference tones from carrier and modulator not in the chord notes"""
-        return np.setdiff1d(self.chord_diff_tones, self.diff_tones())
+        return np.setdiff1d(self.chord_diff_tones(), self.diff_tones())
 
     def roughness(self, only_notes=False):
         """

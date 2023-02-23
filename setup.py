@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import setuptools
 
+# run ./setup.py bdist_wheel
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 

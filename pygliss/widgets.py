@@ -1065,3 +1065,277 @@ class FilteredChordsToggleButtons:
         self.grid[8,9].on_click(play_ot_part30)
 
 
+
+class NoteToggle:
+    
+    def __init__(self, chords,length=1.0):
+
+        self.chord_idx = 0
+        self.chords = chords
+        self.length = len(chords)
+
+        self.arp = "arp"
+        self.mode = "only_play"
+        self.playback_type = 'samples'
+        self.current_chord = chords[0]
+        self.current_note = chords[0].notes[0]
+
+
+    def chord_info(self):
+        note_strs = [f"{idx+1}: {str(freq_to_note(n))}\n" for idx, n in enumerate(self.current_chord.notes)]
+        return f"{''.join(note_strs)} idx:{self.chord_idx}"
+
+    def chord_score(self):
+        if self.arp == 'arp':
+            s = get_chord_arp_stream([self.current_chord], add_number=True)
+        else:
+            s = get_chord_stream([self.current_chord])
+        return s
+
+    def play_current(self):
+        # play_stream(self.streams[self.cand_idx])
+        pause = 0.0 if self.arp  != "arp" else 0.2
+        play_sampled_notes(self.current_chord.to_notes(), pause=pause)
+
+    def playback_arp_mode(self):
+        # play_stream(self.streams[self.cand_idx])
+        # play_sampled_notes(self.current_chord.to_notes(), pause=0.2)
+        if self.arp == "chord":
+            self.arp = "arp"
+        else:
+            self.arp = "chord"
+
+    def next_chord(self):
+        if self.chord_idx  < self.length - 1:
+            self.chord_idx  += 1
+            self.current_chord = self.chords[self.chord_idx]
+            # play_stream(self.streams[self.cand_idx])
+            play_sampled_notes(self.current_chord.to_notes())
+
+
+    def prev_chord(self):
+        if self.chord_idx  > 0:
+            self.chord_idx -= 1
+            self.current_chord = self.chords[self.chord_idx]
+            play_sampled_notes(self.current_chord.to_notes())
+
+    def toggle_note(self):
+        if self.mode != "only_play":
+            # add note to chord
+            # should you be able to toggle notes that are in the chord itself?
+            # sum or diff tones are already in there
+            contains_idx = np.argwhere(np.isin(self.current_chord.notes, self.current_note)).ravel()
+            if len(contains_idx) == 0:
+                self.current_chord.notes = np.sort(np.append(self.current_chord.notes, self.current_note))
+
+            else:
+                self.current_chord.notes = np.sort(np.delete(self.current_chord.notes, contains_idx[0]))
+
+    def toggle_mode(self):
+        if self.mode == "note":
+            self.mode = "only_play"
+        else:
+            self.mode = "note"
+        return self.mode
+
+    
+    def play_tone(self, note_idx=1):
+        if note_idx - 1 >= len(self.current_chord.notes):
+            return None
+        freq = self.current_chord.notes[note_idx-1]
+        if freq >= LOW and freq <= HIGH:
+            play_sampled_notes([freq_to_note(freq)])
+
+    # Notes
+    def play_tone_1(self):
+        self.play_tone(1)
+    def play_tone_2(self):
+        self.play_tone(2)
+    def play_tone_3(self):
+        self.play_tone(3)
+    def play_tone_4(self):
+        self.play_tone(4)
+    def play_tone_5(self):
+        self.play_tone(5)
+
+    def play_tone_6(self):
+        self.play_tone(6)
+    def play_tone_7(self):
+        self.play_tone(7)
+    def play_tone_8(self):
+        self.play_tone(8)
+    def play_tone_9(self):
+        self.play_tone(9)
+    def play_tone_10(self):
+        self.play_tone(10)
+
+    def play_tone_11(self):
+        self.play_tone(11)
+    def play_tone_12(self):
+        self.play_tone(12)
+    def play_tone_13(self):
+        self.play_tone(13)
+    def play_tone_14(self):
+        self.play_tone(14)
+    def play_tone_15(self):
+        self.play_tone(15)
+
+    def play_tone_16(self):
+        self.play_tone(16)
+    def play_tone_17(self):
+        self.play_tone(17)
+    def play_tone_18(self):
+        self.play_tone(18)
+    def play_tone_19(self):
+        self.play_tone(19)
+    def play_tone_20(self):
+        self.play_tone(20)
+
+        
+
+class NoteToggleButtons:
+    
+    def __init__(self, chords,length=1.0):
+        self.toggle = NoteToggle(chords, length)
+        self.grid = widgets.GridspecLayout(4, 9)
+        self.output = widgets.Output()
+
+
+        def create_button(desc, style):
+            return widgets.Button(description=desc, button_style=style, 
+                layout=widgets.Layout(height='auto', width='auto'))
+
+
+        self.grid[3,5] = create_button('Chord Score'.format(""), 'primary')
+        def chord_score(b):
+            with self.output:
+                clear_output()
+                s = self.toggle.chord_score()
+                s.show()
+        self.grid[3,5].on_click(chord_score)
+
+
+        self.grid[3,6] = create_button('Play Chord'.format(""), 'success')
+        def play_current(b):
+            self.toggle.play_current()
+        self.grid[3,6].on_click(play_current)
+
+        self.grid[3,7] = create_button('Arp'.format(""), 'info')
+        def playback_arp_mode(b):
+            self.toggle.playback_arp_mode()
+        self.grid[3,7].on_click(playback_arp_mode)
+
+        
+        # # next candidate
+        self.grid[2,8] = create_button('Next'.format(""), 'warning')
+        def next_chord(b):
+            self.toggle.next_chord()
+            with self.output:
+                clear_output()
+                print(self.toggle.chord_info())
+        self.grid[2,8].on_click(next_chord)
+
+
+        # # previous candidate
+        self.grid[2,7] = create_button('Prev'.format(""), 'warning')
+        def prev_chord(b):
+            self.toggle.prev_chord()
+            with self.output:
+                clear_output()
+                print(self.toggle.chord_info())
+        self.grid[2,7].on_click(prev_chord)
+
+        tone_idx = 1
+        #tones
+        for i in range(4):
+            for j in range(5):
+                b = create_button('{}'.format(tone_idx), 'info')
+                self.grid[i, j] = b
+                tone_idx += 1
+        
+        display(self.grid)
+        display(self.output)
+
+        ## Chord tones
+        def play_tone_1(b):
+            self.toggle.play_tone_1()
+        self.grid[0,0].on_click(play_tone_1)
+
+        def play_tone_2(b):
+            self.toggle.play_tone_2()
+        self.grid[0,1].on_click(play_tone_2)
+
+        def play_tone_3(b):
+            self.toggle.play_tone_3()
+        self.grid[0,2].on_click(play_tone_3)
+
+        def play_tone_4(b):
+            self.toggle.play_tone_4()
+        self.grid[0,3].on_click(play_tone_4)
+
+        def play_tone_5(b):
+            self.toggle.play_tone_5()
+        self.grid[0,4].on_click(play_tone_5)
+
+
+        def play_tone_6(b):
+            self.toggle.play_tone_6()
+        self.grid[1,0].on_click(play_tone_6)
+
+        def play_tone_7(b):
+            self.toggle.play_tone_7()
+        self.grid[1,1].on_click(play_tone_7)
+
+        def play_tone_8(b):
+            self.toggle.play_tone_8()
+        self.grid[1,2].on_click(play_tone_8)
+
+        def play_tone_9(b):
+            self.toggle.play_tone_9()
+        self.grid[1,3].on_click(play_tone_9)
+
+        def play_tone_10(b):
+            self.toggle.play_tone_10()
+        self.grid[1,4].on_click(play_tone_10)
+
+
+        def play_tone_11(b):
+            self.toggle.play_tone_11()
+        self.grid[2,0].on_click(play_tone_11)
+
+        def play_tone_12(b):
+            self.toggle.play_tone_12()
+        self.grid[2,1].on_click(play_tone_12)
+
+        def play_tone_13(b):
+            self.toggle.play_tone_13()
+        self.grid[2,2].on_click(play_tone_13)
+
+        def play_tone_14(b):
+            self.toggle.play_tone_14()
+        self.grid[2,3].on_click(play_tone_14)
+
+        def play_tone_15(b):
+            self.toggle.play_tone_15()
+        self.grid[2,4].on_click(play_tone_15)
+
+
+        def play_tone_16(b):
+            self.toggle.play_tone_16()
+        self.grid[3,0].on_click(play_tone_16)
+
+        def play_tone_17(b):
+            self.toggle.play_tone_17()
+        self.grid[3,1].on_click(play_tone_17)
+
+        def play_tone_18(b):
+            self.toggle.play_tone_18()
+        self.grid[3,2].on_click(play_tone_18)
+
+        def play_tone_19(b):
+            self.toggle.play_tone_19()
+        self.grid[3,3].on_click(play_tone_19)
+
+        def play_tone_20(b):
+            self.toggle.play_tone_20()
+        self.grid[3,4].on_click(play_tone_20)

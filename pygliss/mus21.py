@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from pygliss.note import Note, freq_to_note
-from music21 import pitch, corpus, midi, stream, tempo, duration, note as m21note, tie, chord
+from music21 import pitch, corpus, midi, stream, tempo, duration, note as m21note, tie, chord, articulations
 
 
 
@@ -376,13 +376,17 @@ def get_mus21_chord(chord):
 	return chord.Chord(m21chord)
 
 
-def get_chord_arp_stream(chords, bpm=60, length=0.25):
+def get_chord_arp_stream(chords, bpm=60, length=0.25, add_number=False):
 	parts = [stream.Part(), stream.Part()]
 	parts.append(tempo.MetronomeMark(number=bpm))
 	for chord in chords:
 		for idx, note in enumerate(chord.notes):
 			n = m21note.Note(get_mus21_pitch(freq_to_note(note)), 
 				quarterLength=length)
+
+			if add_number:
+				f = articulations.Fingering(idx+1)
+				n.articulations.append(f)
 
 			if note > 261:
 				parts[1].append(m21note.Rest(quarterLength=length))

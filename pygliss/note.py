@@ -4,27 +4,65 @@ import numpy as np
 
 
 DIV = (DIVISIONS / 12)
-NOTE_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
-HIGH_OCTAVE = 10
-LOW_OCTAVE = -3
-
 NOTE_VECTOR = make_freq_vector(DIVISIONS)
 NOTE_VECTOR_12 = make_freq_vector(12)
 
 
 class Note:
-	"""Note object represents a note with up to quarter tone divisons supported."""
+    """
+    A class to represent a musical note
+    ...
+    Attributes
+    ----------
+        note : str
+            the diatonic note represented as string
+        octave : int
+            the octave of the note
+		accidental: str
+			accidental alterations of a note in quarter tone increments.
+				"+"  - quarter-tone sharp
+				"#" - semi-tone sharp
+				"++" - three-quarter tone sharp
+				"-" - quarter-tone flat
+				"b" - semi-tone flat
+				"--" - three-quarter flat
+		steps: int
+			the number of quarter (or semi) steps away from the `BASE` note defined 
+			in constants
+		freq: float
+			the frequency of the note
+
+    Methods
+    -------
+        set_steps: 
+            a helper function that sets the `steps` attribute for a given note 
+            based on its position in the range of allowed notes.
+        
+        distance(input_note): 
+            returns distance in quartertone steps between the current note and 
+            the input note
+        
+        frequency: 
+            returns the frequency value of the note
+    """
+
 
 	def __init__(self, note, octave, accidental=None):
+        """
+        Contructs Note
+        Parameters
+        ----------
+            note : str
+            	the diatonic note represented as string
+	        octave : int
+	            the octave of the note
+			accidental: str
+				accidental alterations of a note in quarter tone increments.
+        """
 		self.note = note
 		self.octave = octave
 		self.accidental = accidental
 		self.steps = None
-		self.Next = None
-		self.Prev = None
-		self.Midi = None
-		self.Lily = None
-		self.clef = None
 		self.freq = None
 		self.set_steps()
 
@@ -75,7 +113,21 @@ class Note:
 
 
 def get_note(note_str):
-	"""format "Note Name" + "Accidental"  + "Octave"  """
+    """
+    Returns a note object from the input str
+    The format of a string is:
+    	"Note Name" + "Accidental"  + "Octave" 
+    
+    Parameters
+    ----------
+        note_str : str
+            the input chord
+    Returns
+    -------
+        Note : pygliss.Note
+            The note object from the string representation shorthand
+    """
+
 	note_name = note_str[:1]
 	if len (note_str) == 2:
 		return Note(note_name, int(note_str[1:2]))
@@ -89,7 +141,18 @@ def get_note(note_str):
 
 
 def get_note_steps(note):
-	"""Gets associated steps for a given note."""
+	"""
+    Gets associated steps for a given diatonic note.
+    
+    Parameters
+    ----------
+        note : str
+            the input note str
+    Returns
+    -------
+        steps : float
+            Quarter tone sleps adjusted for the input accidental
+    """
 	steps = 0.0
 	if note == 'A':
 		steps += 0
@@ -119,7 +182,18 @@ def get_note_steps(note):
 
 
 def get_accidental_steps(accidental):
-	"""Gets associated steps for a given accidental."""
+	"""
+    Gets associated quarter tone steps for a given accidental.
+    
+    Parameters
+    ----------
+        accidental : str
+            the input accidental
+    Returns
+    -------
+        steps : float
+            Quarter tone sleps adjusted for the input accidental
+    """
 	steps = 0.0
 	if accidental == '+':
 		steps += 0.5 * DIV
@@ -145,19 +219,20 @@ def get_accidental_steps(accidental):
 	return steps
 
 
- 
-def get_steps(note, octave, accidental):
-	"""returns number of steps based on the number of divisions."""
-	steps = (octave - 4) * DIVISIONS
-	steps += get_note_steps(note)
-	steps += get_accidental_steps(accidental)
-
-
 def freq_to_note(freq):
 	"""
-	Returns a note object based on a given frequency with quartertone 
+    Returns a note object based on a given frequency with quartertone 
 	precision.
-	"""
+    
+    Parameters
+    ----------
+        freq : float
+            the input frequency
+    Returns
+    -------
+        Note : pygliss.Note
+            The note object closest to the input frequency
+    """
 	if freq < LOW or freq > HIGH:
 		return None
 
@@ -175,17 +250,25 @@ def freq_to_note(freq):
 
 	return Note(note_names[note_idx], octave, accidentals[note_idx])
 
-def get_partial(note, fundamental):
-	return note.frequency() / fundamental.frequency()
-
 
 def find_note_vector_position(note_frequency, trunc_beg=None, trunc_end=None):
-    """
+	"""
     Finds note position of a given frequency or array of frequencies
 
     Truncate note array from the begging or end by setting optional arguments
 
+    Values below the frequency range are set to -999999
+    
+    Parameters
+    ----------
+        note_frequency : np.array[np.float]
+            the input frequencies
+    Returns
+    -------
+        note_positions : np.array[np.int]
+            Array of position values for note frequency occurence in NOTE_VECTOR
     """
+
     note_vector = NOTE_VECTOR
     if trunc_beg:
         note_vector = note_vector[trunc_beg:]

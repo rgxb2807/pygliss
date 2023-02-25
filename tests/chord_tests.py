@@ -110,7 +110,7 @@ class TestChordMethods(unittest.TestCase):
 		ot = pygliss.chord.nearest_ot_chord(C_wt_clus.notes, 12)
 	
 
-		# self.assertEqual(nearest_ot.notes[0], pygliss.note.freq_to_note(ot.notes[0]).frequency())
+		self.assertEqual(nearest_ot.notes[0], pygliss.note.freq_to_note(ot.notes[0]).frequency())
 		self.assertEqual(nearest_ot.notes[1], pygliss.note.freq_to_note(ot.notes[1]).frequency())
 		self.assertEqual(nearest_ot.notes[2], pygliss.note.freq_to_note(ot.notes[2]).frequency())
 		self.assertEqual(nearest_ot.notes[3], pygliss.note.freq_to_note(ot.notes[3]).frequency())

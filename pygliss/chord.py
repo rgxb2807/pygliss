@@ -412,6 +412,8 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
         subharmonics = chord_freq[i] * (1 / np.arange(1, m + 1))
         # filter values lower than human hearing
         subharmonics = np.where(subharmonics >= LOW, subharmonics, -1)
+        # adjust subharmonics for equal temperament note values
+        subharmonics = NOTE_VECTOR[find_note_vector_position_vectorized(subharmonics)]
         harmonics = np.rint(chord_freq / subharmonics[:,np.newaxis]) # should this be chord_freq[i] ?????
         chords = harmonics * subharmonics[:, np.newaxis]
         all_chord_sets[i] = chords
@@ -422,11 +424,11 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
     # distance by summing stepwise difference along axis
     diff_from_target_chord = np.sum(np.abs(all_chord_steps - chord_steps), axis=2)
 
-    # choose lowest subharmonic chord
+    # choose subharmonic chord with highest fundamental
     min_diff = np.where(diff_from_target_chord == diff_from_target_chord.min())
-    row_idx, chord_idx = min_diff[0][0], min_diff[1][0]
-    if tiebreak == "highest":
-        row_idx, chord_idx = min_diff[0][-1], min_diff[1][-1]
+    row_idx, chord_idx = min_diff[0][-1], min_diff[1][-1]
+    if tiebreak == "lowest":
+        row_idx, chord_idx = min_diff[0][0], min_diff[1][0]
 
     ot_notes = all_chord_sets[row_idx, chord_idx]
     fundamental = chord_freq[row_idx] * (1 / (chord_idx + 1))

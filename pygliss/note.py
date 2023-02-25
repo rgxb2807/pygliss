@@ -18,19 +18,19 @@ class Note:
             the diatonic note represented as string
         octave : int
             the octave of the note
-		accidental: str
-			accidental alterations of a note in quarter tone increments.
-				"+"  - quarter-tone sharp
-				"#" - semi-tone sharp
-				"++" - three-quarter tone sharp
-				"-" - quarter-tone flat
-				"b" - semi-tone flat
-				"--" - three-quarter flat
-		steps: int
-			the number of quarter (or semi) steps away from the `BASE` note defined 
-			in constants
-		freq: float
-			the frequency of the note
+        accidental: str
+            accidental alterations of a note in quarter tone increments.
+                "+"  - quarter-tone sharp
+                "#" - semi-tone sharp
+                "++" - three-quarter tone sharp
+                "-" - quarter-tone flat
+                "b" - semi-tone flat
+                "--" - three-quarter flat
+        steps: int
+            the number of quarter (or semi) steps away from the `BASE` note defined 
+            in constants
+        freq: float
+            the frequency of the note
 
     Methods
     -------
@@ -47,76 +47,76 @@ class Note:
     """
 
 
-	def __init__(self, note, octave, accidental=None):
+    def __init__(self, note, octave, accidental=None):
         """
         Contructs Note
         Parameters
         ----------
             note : str
-            	the diatonic note represented as string
-	        octave : int
-	            the octave of the note
-			accidental: str
-				accidental alterations of a note in quarter tone increments.
+                the diatonic note represented as string
+            octave : int
+                the octave of the note
+            accidental: str
+                accidental alterations of a note in quarter tone increments.
         """
-		self.note = note
-		self.octave = octave
-		self.accidental = accidental
-		self.steps = None
-		self.freq = None
-		self.set_steps()
+        self.note = note
+        self.octave = octave
+        self.accidental = accidental
+        self.steps = None
+        self.freq = None
+        self.set_steps()
 
-	def __str__(self):
-		if self.accidental is not None:
-		    return str(self.note) + str(self.octave) + str(self.accidental)
-		else:
-			return str(self.note) + str(self.octave)
+    def __str__(self):
+        if self.accidental is not None:
+            return str(self.note) + str(self.octave) + str(self.accidental)
+        else:
+            return str(self.note) + str(self.octave)
 
-	def __lt__(self, other):
-		return self.frequency() < other.frequency()
+    def __lt__(self, other):
+        return self.frequency() < other.frequency()
 
-	def __le__(self, other):
-		return self.frequency() <= other.frequency()
+    def __le__(self, other):
+        return self.frequency() <= other.frequency()
 
-	def __eq__(self,other):
-		return self.frequency() == other.frequency()
+    def __eq__(self,other):
+        return self.frequency() == other.frequency()
 
-	def __ne__(self, other):
-		return self.frequency() != other.frequency()
+    def __ne__(self, other):
+        return self.frequency() != other.frequency()
 
-	def __gt__(self, other):
-		return self.frequency() > other.frequency()
+    def __gt__(self, other):
+        return self.frequency() > other.frequency()
 
-	def __ge__(self, other):
-		return self.frequency() >= other.frequency()
+    def __ge__(self, other):
+        return self.frequency() >= other.frequency()
 
-	def set_steps(self):
-		"""
-		Sets the number of steps for a given note based on its position in the 
-		range of allowed notes.
-		"""
-		if self.steps is None:
-			self.steps = (self.octave - 4) * DIVISIONS
-			self.steps += get_note_steps(self.note)
-			self.steps += get_accidental_steps(self.accidental)
+    def set_steps(self):
+        """
+        Sets the number of steps for a given note based on its position in the 
+        range of allowed notes.
+        """
+        if self.steps is None:
+            self.steps = (self.octave - 4) * DIVISIONS
+            self.steps += get_note_steps(self.note)
+            self.steps += get_accidental_steps(self.accidental)
 
-	def distance(self, other_note):
-		"""Returns the number of quarter tone steps between the given note."""
-		return abs(self.steps - other_note.steps)
+    def distance(self, other_note):
+        """Returns the number of quarter tone steps between the given note."""
+        return abs(self.steps - other_note.steps)
 
     # http://pages.mtu.edu/~suits/NoteFreqCalcs.html
-	def frequency(self):
-		"""Returns the frequency of a Note."""
-		if self.freq is None:
-			self.freq = A440 * BASE ** self.steps
-		return self.freq
+    def frequency(self):
+        """Returns the frequency of a Note."""
+        if self.freq is None:
+            self.freq = A440 * BASE ** self.steps
+        return self.freq
 
 
 def get_note(note_str):
     """
     Returns a note object from the input str
     The format of a string is:
-    	"Note Name" + "Accidental"  + "Octave" 
+        "Note Name" + "Accidental"  + "Octave" 
     
     Parameters
     ----------
@@ -128,20 +128,20 @@ def get_note(note_str):
             The note object from the string representation shorthand
     """
 
-	note_name = note_str[:1]
-	if len (note_str) == 2:
-		return Note(note_name, int(note_str[1:2]))
+    note_name = note_str[:1]
+    if len (note_str) == 2:
+        return Note(note_name, int(note_str[1:2]))
 
-	if len(note_str) == 3:
-		return Note(note_name, int(note_str[2:3]), note_str[1:2])
+    if len(note_str) == 3:
+        return Note(note_name, int(note_str[2:3]), note_str[1:2])
 
-	if len(note_str) == 4:
-		return Note(note_name, int(note_str[3:4]), note_str[1:3])
+    if len(note_str) == 4:
+        return Note(note_name, int(note_str[3:4]), note_str[1:3])
 
 
 
 def get_note_steps(note):
-	"""
+    """
     Gets associated steps for a given diatonic note.
     
     Parameters
@@ -153,36 +153,36 @@ def get_note_steps(note):
         steps : float
             Quarter tone sleps adjusted for the input accidental
     """
-	steps = 0.0
-	if note == 'A':
-		steps += 0
+    steps = 0.0
+    if note == 'A':
+        steps += 0
 
-	elif note == 'B':
-		steps += 2 * DIV
+    elif note == 'B':
+        steps += 2 * DIV
 
-	elif note == 'C':
-		steps += -9 * DIV
+    elif note == 'C':
+        steps += -9 * DIV
 
-	elif note == 'D':
-		steps += -7 * DIV
+    elif note == 'D':
+        steps += -7 * DIV
 
-	elif note == 'E':
-		steps += -5 * DIV
+    elif note == 'E':
+        steps += -5 * DIV
 
-	elif note == 'F':
-	    steps += -4 * DIV
+    elif note == 'F':
+        steps += -4 * DIV
 
-	elif note == 'G':
-		steps += -2 * DIV
+    elif note == 'G':
+        steps += -2 * DIV
 
-	else:
-		steps += 0.0
+    else:
+        steps += 0.0
 
-	return steps
+    return steps
 
 
 def get_accidental_steps(accidental):
-	"""
+    """
     Gets associated quarter tone steps for a given accidental.
     
     Parameters
@@ -194,35 +194,35 @@ def get_accidental_steps(accidental):
         steps : float
             Quarter tone sleps adjusted for the input accidental
     """
-	steps = 0.0
-	if accidental == '+':
-		steps += 0.5 * DIV
+    steps = 0.0
+    if accidental == '+':
+        steps += 0.5 * DIV
 
-	elif accidental == '#':
-		steps += 1.0 * DIV
+    elif accidental == '#':
+        steps += 1.0 * DIV
 
-	elif accidental == '++':
-		steps += 1.5 * DIV
+    elif accidental == '++':
+        steps += 1.5 * DIV
 
-	elif accidental == '-':
-		steps += -0.5 * DIV
+    elif accidental == '-':
+        steps += -0.5 * DIV
 
-	elif accidental == 'b':
-		steps += -1.0 * DIV
+    elif accidental == 'b':
+        steps += -1.0 * DIV
 
-	elif accidental == '--':
-		steps += -1.5 * DIV
+    elif accidental == '--':
+        steps += -1.5 * DIV
 
-	else:
-		steps += 0.0
+    else:
+        steps += 0.0
 
-	return steps
+    return steps
 
 
 def freq_to_note(freq):
-	"""
+    """
     Returns a note object based on a given frequency with quartertone 
-	precision.
+    precision.
     
     Parameters
     ----------
@@ -233,26 +233,26 @@ def freq_to_note(freq):
         Note : pygliss.Note
             The note object closest to the input frequency
     """
-	if freq < LOW or freq > HIGH:
-		return None
+    if freq < LOW or freq > HIGH:
+        return None
 
-	note_position = find_note_vector_position_vectorized(freq)
-	octave = int(np.floor(note_position / DIVISIONS))
-	note_idx = int(note_position - octave * DIVISIONS)
-	
-	note_names = ["C", "C", "C", "C", "D", "D", "D", "D", "E", "E", "F", "F",
-	"F", "F", "G", "G", "G", "G", "A", "A", "A", "A", "B", "B"]
-	accidentals = [None, "+", "#", "++", None, "+", "#", "++", None, "+", None, "+",
-	"#", "++", None, "+", "#", "++", None, "+", "#", "++", None, "+"]
-	
-	if DIVISIONS == 12:
-		note_idx = note_idx * 2
+    note_position = find_note_vector_position_vectorized(freq)
+    octave = int(np.floor(note_position / DIVISIONS))
+    note_idx = int(note_position - octave * DIVISIONS)
+    
+    note_names = ["C", "C", "C", "C", "D", "D", "D", "D", "E", "E", "F", "F",
+    "F", "F", "G", "G", "G", "G", "A", "A", "A", "A", "B", "B"]
+    accidentals = [None, "+", "#", "++", None, "+", "#", "++", None, "+", None, "+",
+    "#", "++", None, "+", "#", "++", None, "+", "#", "++", None, "+"]
+    
+    if DIVISIONS == 12:
+        note_idx = note_idx * 2
 
-	return Note(note_names[note_idx], octave, accidentals[note_idx])
+    return Note(note_names[note_idx], octave, accidentals[note_idx])
 
 
 def find_note_vector_position(note_frequency, trunc_beg=None, trunc_end=None):
-	"""
+    """
     Finds note position of a given frequency or array of frequencies
 
     Truncate note array from the begging or end by setting optional arguments

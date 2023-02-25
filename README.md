@@ -1,5 +1,5 @@
 # Glissandi Harmonic Relations Calculator in Python
-Calculates the chordal relationship between two or more independent glissandi.  Lilypond integration to display score instead of text representation, not yet implemented 
+Calculates the chordal relationship between two or more independent glissandi.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ Calculates the chordal relationship between two or more independent glissandi.  
 ## Introduction
 The motivation for this project started out of a desire to move beyond the vertically structured harmonic tendencies of the Spectral Music school.  I greatly admire the work of Gerard Grisey and Tristan Murail and wanted to see if a more horizontal approach to frequency based composition was possible.  Mass structure composers like Ligeti and Cerha and more recently Jay Schwartz and Georg Friedrich Haas employ various polyphonic structures, one of which is the slowly evolving glissandi structure. 
 
-The goal of this program is to allow the user to calculate these structures quickly and isolate important harmonic moments.  Once moments are isolated the user will be able to perform various operations on a a given chord:nearest overtone chord, sum and difference tone calculations.  
+The goal of this program is to allow the user to calculate these structures quickly and isolate important harmonic moments.  Once moments are isolated the user will be able to perform various operations on a a given chord:nearest overtone chord, nearest frequency modulation chords.  
 
 ## Useful Music Links
 
@@ -43,11 +43,11 @@ The goal of this program is to allow the user to calculate these structures quic
 
 ### Musical Examples
 
-- [Grisey: Partiels](https://www.youtube.com/watch?v=GRRwk3hwrDI)
+- [Grisey: Partiels](https://www.youtube.com/watch?v=2LAtJHFJuog)
 - [Murail: Les courants de l'espace](https://www.youtube.com/watch?v=e5tOhMPqmQo)
 - [Ligeti: Atmospheres](https://www.youtube.com/watch?v=9XfefKJRoSA)
 - [Cerha: Spiegel II](https://www.youtube.com/watch?v=ZJxIWmYiHPc)
-- [Haas: Limited Approximations](https://www.youtube.com/watch?v=BoqvGLdjUhE&t=1309s)
+- [Haas: Limited Approximations](https://www.youtube.com/watch?v=BoqvGLdjUhE)
 - [Schwartz: Music for Orchestra](https://www.youtube.com/watch?v=WuogXAgt2u4)
 
 

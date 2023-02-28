@@ -154,30 +154,12 @@ def get_note_steps(note):
             Quarter tone sleps adjusted for the input accidental
     """
     steps = 0.0
-    if note == 'A':
-        steps += 0
-
-    elif note == 'B':
-        steps += 2 * DIV
-
-    elif note == 'C':
-        steps += -9 * DIV
-
-    elif note == 'D':
-        steps += -7 * DIV
-
-    elif note == 'E':
-        steps += -5 * DIV
-
-    elif note == 'F':
-        steps += -4 * DIV
-
-    elif note == 'G':
-        steps += -2 * DIV
-
+    note_map = {"A":0, "B":2, "C":-9, "D":-7, "E":-5, "F":-4, "G":-2}
+    step_val = note_map.get(note)
+    if step_val:
+        steps += step_val * DIV
     else:
-        steps += 0.0
-
+        steps += 0
     return steps
 
 
@@ -195,24 +177,10 @@ def get_accidental_steps(accidental):
             Quarter tone sleps adjusted for the input accidental
     """
     steps = 0.0
-    if accidental == '+':
-        steps += 0.5 * DIV
-
-    elif accidental == '#':
-        steps += 1.0 * DIV
-
-    elif accidental == '++':
-        steps += 1.5 * DIV
-
-    elif accidental == '-':
-        steps += -0.5 * DIV
-
-    elif accidental == 'b':
-        steps += -1.0 * DIV
-
-    elif accidental == '--':
-        steps += -1.5 * DIV
-
+    acc_map = {"+":0.5, "#":1.0, "++":1.5, "-":-0.5, "b":-1.0, "--":-1.5}
+    acc_val = acc_map.get(accidental)
+    if acc_val:
+        steps += acc_val * DIV
     else:
         steps += 0.0
 

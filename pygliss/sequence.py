@@ -1,4 +1,5 @@
 import numpy as np
+from pygliss.note import freq_to_note
 from pygliss.chord import Chord
 
 class NoteSequence:
@@ -18,7 +19,8 @@ class NoteSequence:
 
 	Methods
 	-------
-
+	to_note:
+		returns a list of Note objects from the note sequence
 	"""
 
 	def __init__(self, notes, time_val, durations):
@@ -26,6 +28,10 @@ class NoteSequence:
 		self.time_val = time_val
 		self.durations  = durations
 		self.length = len(notes)
+
+	def to_note(self):
+		"""Returns list of Note objects from note sequence"""
+		return [freq_to_note(self.notes[i]) for i in range(self.length)]
 
 
 
@@ -47,7 +53,8 @@ class ChordSequence:
 
 	Methods
 	-------
-
+	to_chord:
+		returns a list of Chord objects from the Chord sequence
 	"""
 	def __init__(self, chords, time_val, durations):
 		self.chords = chords

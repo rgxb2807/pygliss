@@ -411,7 +411,14 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
     for i in range(len_notes):
         subharmonics = chord_freq[i] * (1 / np.arange(1, m + 1))
         # filter values lower than human hearing
-        subharmonics = np.where(subharmonics >= LOW, subharmonics, -1)
+        # subharmonics = np.where(subharmonics >= LOW, subharmonics, -1)
+
+        # TEMP FIX - because the low value is zeroed out in find_note_vector_position_vectorized
+        # we have to use 1 value above the lowest to avoid the index out of range issue
+        subharmonics = np.where(subharmonics >= NOTE_VECTOR[1], subharmonics, np.inf)
+        # # replace +inf values with min hearable value
+        # # TODO - remove duplicates 
+        subharmonics = np.where(subharmonics == np.inf, np.min(subharmonics), subharmonics)
         # adjust subharmonics for equal temperament note values
         subharmonics = NOTE_VECTOR[find_note_vector_position_vectorized(subharmonics)]
         harmonics = np.rint(chord_freq / subharmonics[:,np.newaxis]) # should this be chord_freq[i] ?????

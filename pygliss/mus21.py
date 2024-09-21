@@ -310,13 +310,6 @@ def gliss_ratio(glissandi, length=0.25, bpm=60):
 		part = build_note_sequence(gliss, longest, length)
 		parts.append(part)
 
-	# for part in parts:
-	# 	print(part.notes)
-	# 	for note in part.notes:
-	# 		print(note)
-	# 		print(note.duration)
-	# 		print()
-
 	s = stream.Stream(parts)
 	return s
 

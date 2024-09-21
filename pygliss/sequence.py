@@ -115,6 +115,46 @@ class ChordSequence:
 		"""Returns list of Chord objects from Chord sequence"""
 		return [Chord(self.chords[i], self.durations[i]) for i in range(self.length)]
 
+	def add_offset_at_position(self, silence_duration, durations_idx):
+		"""Adds silence in seconds at specified `durations` idx """
+		self.durations = np.insert(self.durations, durations_idx, silence_duration)
+		self.chords = np.insert(self.chords, durations_idx, np.zeros(len(self.chords[0])), axis=0)
+		self.length = len(self.chords)
+		new_time_val = np.zeros(self.length)
+		for i in range(len(new_time_val)):
+			if i > durations_idx:
+				new_time_val[i] = silence_duration + self.time_val[i-1]
+			elif i <= durations_idx:
+				new_time_val[i] = self.time_val[i]
+		self.time_val = new_time_val
+
+
+	def remove_offset_at_position(self, durations_idx):
+		"""removes silence in seconds at specified `durations` idx """
+		if np.all(self.chords[durations_idx]) == 0.0:
+			silence_duration = self.durations[durations_idx]
+			self.durations = np.delete(self.durations, durations_idx)
+			self.chords = np.delete(self.chords, durations_idx, axis=0)
+			self.length = len(self.chords)
+			new_time_val = np.zeros(self.length)
+			for i in range(len(new_time_val)):
+				if i > durations_idx:
+					new_time_val[i] = self.time_val[i+1] - silence_duration
+				elif i <= durations_idx:
+					new_time_val[i] = self.time_val[i]
+			self.time_val = new_time_val
+
+	def add_offset(self, offset_dur):
+		"""Adds silence at the beginning of the sequence"""
+		self.add_offset_at_position(offset_dur, 0)
+
+	def add_silence(self, offset_dur):
+		"""Adds silence at the end of the sequence"""
+		self.durations = np.append(self.durations, offset_dur)
+		self.chords = np.append(self.chords, 0.0)
+		self.length = len(self.chords)
+		self.time_val = np.append(self.time_val, np.sum(self.durations[:-1]))
+
 
 
 def make_chord_seq_from_note_seq(note_sequences):

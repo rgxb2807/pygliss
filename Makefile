@@ -1,7 +1,7 @@
 init:
 	pip install -r requirements.txt
 
-test: test_note test_chord test_gliss test_gliss_cmpr test_music21
+test: test_note test_chord test_gliss test_gliss_cmpr test_music21 test_seq
 
 test_note:
 	python -m unittest tests/note_tests.py
@@ -17,3 +17,6 @@ test_gliss_cmpr:
 
 test_music21:
 	python -m unittest tests/music21_tests.py
+
+test_seq:
+	python -m unittest tests/sequence_tests.py

@@ -218,3 +218,68 @@ def make_chord_seq_from_note_seq(note_sequences):
     
     chord_seq = ChordSequence(chords, time_vals, durations)
     return chord_seq
+
+
+def get_tempo_vals(start_bpm, beats, end_bpm=None):
+    
+    """
+    Returns a ChordSequence all chords from overlapping note sequences
+
+    
+    Parameters
+	----------
+	start_bpm : int
+		the starting tempo
+	beats : int
+		the number beat @ start_bpm
+	end_bpm (optional): int
+		the end bpm indicating a tempo change
+
+	Returns
+	-------
+	time_val : numpy.ndarray[numpy.float64]
+		the time value of the sequence starting at 0
+	durations : numpy.ndarray[numpy.float64]
+		durations of each note
+
+    """	
+
+    if not end_bpm:
+        time_val = (1 /  beats) * np.arange(0, beats)
+        durations = (1 /  beats) * np.ones(beats)
+        return time_val, durations
+
+    tempo_diff = end_bpm - start_bpm
+    bpm_increase = tempo_diff / beats # first beat should be at start_bpm
+    time_val, durations = np.zeros(beats), np.zeros(beats) 
+    for i in range(beats):
+        durations[i] = 60 / (start_bpm + bpm_increase * i)
+        if i > 0:
+            time_val[i] = durations[i-1] + time_val[i-1]
+    return time_val, durations
+
+
+
+
+
+def transform_tempo(source_durations, source_time_val, target_beat_durations, \
+	target_beat_time_val, source_beats=None):
+    
+    """
+    Returns a ChordSequence all chords from overlapping note sequences
+
+    
+    Parameters
+	----------
+		note_sequences : list of pygliss.NoteSequence
+			the starting note of the gliss
+
+	Returns
+	-------
+		chord_seq : pygliss.ChordSequence
+			ChordSequence generated from note_sequences
+
+    """
+
+
+

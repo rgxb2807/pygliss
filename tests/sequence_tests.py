@@ -197,6 +197,33 @@ class TestSequenceMethods(unittest.TestCase):
 		assert chords_seq.time_val[2] == 0.5
 		assert chords_seq.time_val[3] == 0.75
 
+	def test_get_tempo_vals_1(self):
+		start_bpm = 60
+		beats = 4
+		test_time_vals = np.array([0.0, 0.25, 0.5, 0.75])
+		test_durations = np.array([0.25, 0.25, 0.25, 0.25])
+		time_val, durations = pygliss.sequence.get_tempo_vals(start_bpm, beats)
+		assert np.array_equal(test_time_vals, time_val) == True
+		assert np.array_equal(test_durations, durations) == True
+
+
+	def test_get_tempo_vals_2(self):
+		# 60 | 70 | 80 | 90 | 100 | 110
+		start_bpm = 60
+		end_bpm = 120
+		beats = 6
+
+		test_time_vals = np.zeros(beats)
+		test_durations = np.array([60 / val for val in [60.0, 70.0, 80.0, 90.0, 100.0, 110.0]])
+		for i, val in enumerate(test_durations):
+			if i > 0:
+				test_time_vals[i] = test_time_vals[i-1] + test_durations[i-1]
+
+		time_val, durations = pygliss.sequence.get_tempo_vals(start_bpm, beats, end_bpm=end_bpm)
+		assert np.array_equal(test_time_vals, time_val) == True
+		assert np.array_equal(test_durations, durations) == True
+
+
 
 
 if __name__ == '__main__':

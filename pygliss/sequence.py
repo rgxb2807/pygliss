@@ -30,9 +30,17 @@ class NoteSequence:
 		self.length = len(notes)
 		assert len(notes) == len(durations)
 
+	def __iadd__(self, other):
+		"""TODO"""
+		pass
+
 	def to_note(self):
 		"""Returns list of Note objects from note sequence"""
 		return [freq_to_note(self.notes[i]) for i in range(self.length)]
+
+	def concat(self, other):
+		"""TODO"""
+		pass
 
 	def add_offset_at_position(self, silence_duration, durations_idx):
 		"""Adds silence in seconds at specified `durations` idx """
@@ -111,9 +119,16 @@ class ChordSequence:
 			s += str(self.chords[i]) + " " + str(self.durations[i]) +"\n"
 		return s
 
+	def __iadd__(self, other):
+		pass
+
 	def to_chord(self):
 		"""Returns list of Chord objects from Chord sequence"""
 		return [Chord(self.chords[i], self.durations[i]) for i in range(self.length)]
+
+	def concat(self, other):
+		"""TODO"""
+		pass
 
 	def add_offset_at_position(self, silence_duration, durations_idx):
 		"""Adds silence in seconds at specified `durations` idx """

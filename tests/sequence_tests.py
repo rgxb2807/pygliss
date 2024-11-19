@@ -200,8 +200,8 @@ class TestSequenceMethods(unittest.TestCase):
 	def test_get_tempo_vals_1(self):
 		start_bpm = 60
 		beats = 4
-		test_time_vals = np.array([0.0, 0.25, 0.5, 0.75])
-		test_durations = np.array([0.25, 0.25, 0.25, 0.25])
+		test_time_vals = np.array([0.0, 1.0, 2.0, 3.0])
+		test_durations = np.array([1.0, 1.0, 1.0, 1.0])
 		time_val, durations = pygliss.sequence.get_tempo_vals(start_bpm, beats)
 		assert np.array_equal(test_time_vals, time_val) == True
 		assert np.array_equal(test_durations, durations) == True

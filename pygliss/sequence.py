@@ -16,6 +16,9 @@ class NoteSequence:
 		the time value of the sequence starting at 0
 	durations : numpy.ndarray[numpy.float64]
 		durations of each note
+	beats (optional) : numpy.ndarray[numpy.float64]
+		the duration of each beat if a time signature/beat value is applicable
+
 
 	Methods
 	-------
@@ -23,12 +26,13 @@ class NoteSequence:
 		returns a list of Note objects from the note sequence
 	"""
 
-	def __init__(self, notes, time_val, durations):
+	def __init__(self, notes, time_val, durations, beats=None):
 		self.notes = notes
 		self.time_val = time_val
 		self.durations = durations
 		self.length = len(notes)
 		assert len(notes) == len(durations)
+		self.beats = beats
 
 	def __iadd__(self, other):
 		"""TODO"""
@@ -100,18 +104,21 @@ class ChordSequence:
 		the time value of the sequence starting at 0
 	durations : numpy.ndarray[numpy.float64]
 		durations of each note
+	beats (optional) : numpy.ndarray[numpy.float64]
+		the duration of each beat if a time signature/beat value is applicable
 
 	Methods
 	-------
 	to_chord:
 		returns a list of Chord objects from the Chord sequence
 	"""
-	def __init__(self, chords, time_val, durations):
+	def __init__(self, chords, time_val, durations, beats=None):
 		self.chords = chords
 		self.time_val = time_val
 		self.durations  = durations
 		self.length = len(chords)
 		assert len(chords) == len(durations)
+		self.beats = beats
 
 	def __str__(self):
 		s = ''
@@ -220,43 +227,81 @@ def make_chord_seq_from_note_seq(note_sequences):
     return chord_seq
 
 
+# def get_tempo_vals(start_bpm, beats, end_bpm=None):
+    
+#     """
+#     Returns a the duration of each beat and when they occur as time values
+
+    
+#     Parameters
+# 	----------
+# 	start_bpm : int
+# 		the starting tempo
+# 	beats : int
+# 		the number beat @ start_bpm
+# 	end_bpm (optional): int
+# 		the end bpm indicating a tempo change
+
+# 	Returns
+# 	-------
+# 	time_val : numpy.ndarray[numpy.float64]
+# 		the time value of the sequence starting at 0
+# 	durations : numpy.ndarray[numpy.float64]
+# 		durations of each beat
+
+#     """	
+
+#     if not end_bpm:
+#         time_val = (1 /  beats) * np.arange(0, beats)
+#         durations = (1 /  beats) * np.ones(beats)
+#         return time_val, durations
+
+#     tempo_diff = end_bpm - start_bpm
+#     bpm_increase = tempo_diff / beats # first beat should be at start_bpm
+#     time_val, durations = np.zeros(beats), np.zeros(beats) 
+#     for i in range(beats):
+#         durations[i] = 60 / (start_bpm + bpm_increase * i)
+#         if i > 0:
+#             time_val[i] = durations[i-1] + time_val[i-1]
+#     return time_val, durations
+
+
 def get_tempo_vals(start_bpm, beats, end_bpm=None):
-    
     """
-    Returns a ChordSequence all chords from overlapping note sequences
+    Returns the duration of each beat and their corresponding time values.
 
-    
     Parameters
-	----------
-	start_bpm : int
-		the starting tempo
-	beats : int
-		the number beat @ start_bpm
-	end_bpm (optional): int
-		the end bpm indicating a tempo change
+    ----------
+    start_bpm : int
+        The starting tempo in beats per minute.
+    beats : int
+        The number of beats in the sequence.
+    end_bpm : int, optional
+        The ending tempo in beats per minute for a linear tempo change. 
+        If not provided, the tempo remains constant.
 
-	Returns
-	-------
-	time_val : numpy.ndarray[numpy.float64]
-		the time value of the sequence starting at 0
-	durations : numpy.ndarray[numpy.float64]
-		durations of each note
+    Returns
+    -------
+    time_val : numpy.ndarray
+        The time values of each beat, starting at 0.
+    durations : numpy.ndarray
+        The durations of each beat in seconds.
+    """
+    if beats <= 0:
+        raise ValueError("Number of beats must be greater than zero.")
 
-    """	
-
-    if not end_bpm:
-        time_val = (1 /  beats) * np.arange(0, beats)
-        durations = (1 /  beats) * np.ones(beats)
+    if not end_bpm:  # Constant tempo
+        durations = np.full(beats, 60 / start_bpm)
+        time_val = np.cumsum(np.append([0], durations[:-1]))  # Time at start of each beat
         return time_val, durations
 
-    tempo_diff = end_bpm - start_bpm
-    bpm_increase = tempo_diff / beats # first beat should be at start_bpm
-    time_val, durations = np.zeros(beats), np.zeros(beats) 
-    for i in range(beats):
-        durations[i] = 60 / (start_bpm + bpm_increase * i)
-        if i > 0:
-            time_val[i] = durations[i-1] + time_val[i-1]
+    # Linear tempo change (accelerando or ritardando)
+    tempo = np.linspace(start_bpm, end_bpm, beats, endpoint=False)  # Exclude end_bpm
+    durations = 60 / tempo  # Convert tempo to beat durations
+    time_val = np.cumsum(np.append([0], durations[:-1]))  # Time at start of each beat
+
     return time_val, durations
+
 
 
 
@@ -266,20 +311,52 @@ def transform_tempo(source_durations, source_time_val, target_beat_durations, \
 	target_beat_time_val, source_beats=None):
     
     """
-    Returns a ChordSequence all chords from overlapping note sequences
+    Transforms the source durrations to the beat values specified in the target
 
     
     Parameters
 	----------
-		note_sequences : list of pygliss.NoteSequence
-			the starting note of the gliss
+	source_durations : numpy.ndarray[numpy.float64]
+		durations of note/chord of the source material
+	source_time_val : numpy.ndarray[numpy.float64]
+		time values of the note/chord of the source material
+	target_beat_durations : numpy.ndarray[numpy.float64]
+		durations of the beat values of the target
+	target_beat_time_val : numpy.ndarray[numpy.float64]
+		time values of the beat values of the target
+
 
 	Returns
 	-------
-		chord_seq : pygliss.ChordSequence
-			ChordSequence generated from note_sequences
-
+	time_val : numpy.ndarray[numpy.float64]
+		the time value of the sequence starting at 0
+	durations : numpy.ndarray[numpy.float64]
+		durations of each note/chord
     """
+    source_seq_duration = np.sum(source_durations)
+    target_seq_duration = np.sum(target_beat_durations)
+    target_num_beats = len(target_beat_durations)
+
+    time_val, durations = np.zeros(1), np.zeros(1)
+    if source_beats is None:
+    	pass
+    else:
+    	# divide source int chunks by target_num_beats
+    	# indicate if values should be tied over
+    	# multiply each chunk by time value
+    	# combine chunks with ties
+    	# target_beat_idx = 0
+
+    	# multiply each chunk by factor of its corresponding beat time value
+    	# if a note goes over, then you have to proportioanlly divide
+    	# meaning you'll need the LCM between the source and target if beats 
+    	# are present, if they're note you just have to figure out how much 
+    	# they go over
+    	pass
+
+
+
+
 
 
 

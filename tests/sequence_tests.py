@@ -376,6 +376,9 @@ class TestSequenceMethods(unittest.TestCase):
 		assert np.allclose(time_val, test_time_val)
 		assert np.allclose(durations, test_durations)
 
+	def test_concat_seq_1(self):
+		pass
+
 
 
 

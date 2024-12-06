@@ -135,7 +135,33 @@ class ChordSequence:
 
 	def concat(self, other):
 		"""TODO"""
-		pass
+		# Get time values
+	    time_tuple = ([self.time_val, other.time_val])
+	    time_vals = np.sort(np.unique(np.concatenate((time_tuple))))
+	    
+	    # create array for time, glissandi and note durations
+	    self_dim = self.chords.shape[0]
+	    other_dim = self.other.chords.shape[0]
+	    chords = np.zeros((time_vals.shape[0], self_dim + other_dim))
+	    
+	    # calculate durations
+	    diff = np.diff(time_vals)
+	    durations = np.append(diff, [1 - np.sum(diff)])
+	    
+	    chord_idx, other_idx = 0,0
+	    for idx, time_val in enumerate(time_vals):
+
+	    	if self.time_val[chord_idx] < time_val:
+	    		chord_idx += 1
+
+	    	if other.time_val[other_idx] < time_val:
+	    		other_idx += 1
+
+	    	chords[:self_dim, idx] = self.chords[:,chord_idx]
+	    	chords[self_dim:, idx] = other.chords[:,other_idx]
+	    
+	    chord_seq = ChordSequence(chords, time_vals, durations)
+	    return chord_seq
 
 	def add_offset_at_position(self, silence_duration, durations_idx):
 		"""Adds silence in seconds at specified `durations` idx """
@@ -227,45 +253,6 @@ def make_chord_seq_from_note_seq(note_sequences):
     return chord_seq
 
 
-# def get_tempo_vals(start_bpm, beats, end_bpm=None):
-    
-#     """
-#     Returns a the duration of each beat and when they occur as time values
-
-    
-#     Parameters
-# 	----------
-# 	start_bpm : int
-# 		the starting tempo
-# 	beats : int
-# 		the number beat @ start_bpm
-# 	end_bpm (optional): int
-# 		the end bpm indicating a tempo change
-
-# 	Returns
-# 	-------
-# 	time_val : numpy.ndarray[numpy.float64]
-# 		the time value of the sequence starting at 0
-# 	durations : numpy.ndarray[numpy.float64]
-# 		durations of each beat
-
-#     """	
-
-#     if not end_bpm:
-#         time_val = (1 /  beats) * np.arange(0, beats)
-#         durations = (1 /  beats) * np.ones(beats)
-#         return time_val, durations
-
-#     tempo_diff = end_bpm - start_bpm
-#     bpm_increase = tempo_diff / beats # first beat should be at start_bpm
-#     time_val, durations = np.zeros(beats), np.zeros(beats) 
-#     for i in range(beats):
-#         durations[i] = 60 / (start_bpm + bpm_increase * i)
-#         if i > 0:
-#             time_val[i] = durations[i-1] + time_val[i-1]
-#     return time_val, durations
-
-
 def get_tempo_vals(start_bpm, beats, end_bpm=None):
     """
     Returns the duration of each beat and their corresponding time values.
@@ -303,92 +290,6 @@ def get_tempo_vals(start_bpm, beats, end_bpm=None):
     return time_val, durations
 
 
-
-
-
-
-# def transform_tempo(source_durations, source_time_val, target_beat_durations, \
-# 	target_beat_time_val, source_beats=None):
-    
-#     """
-#     Transforms the source durrations to the beat values specified in the target
-
-    
-#     Parameters
-# 	----------
-# 	source_durations : numpy.ndarray[numpy.float64]
-# 		durations of note/chord of the source material
-# 	source_time_val : numpy.ndarray[numpy.float64]
-# 		time values of the note/chord of the source material
-# 	target_beat_durations : numpy.ndarray[numpy.float64]
-# 		durations of the beat values of the target
-# 	target_beat_time_val : numpy.ndarray[numpy.float64]
-# 		time values of the beat values of the target
-
-
-# 	Returns
-# 	-------
-# 	time_val : numpy.ndarray[numpy.float64]
-# 		the time value of the sequence starting at 0
-# 	durations : numpy.ndarray[numpy.float64]
-# 		durations of each note/chord
-#     """
-#     source_seq_duration = np.sum(source_durations)
-#     target_seq_duration = np.sum(target_beat_durations)
-#     target_num_beats = len(target_beat_durations)
-
-#     time_val, durations = np.zeros(1), np.zeros(1)
-#     if source_beats is None:
-#     	pass
-#     else:
-#     	# divide source int chunks by target_num_beats
-#     	# indicate if values should be tied over
-#     	# multiply each chunk by time value
-#     	# combine chunks with ties
-#     	# target_beat_idx = 0
-
-#     	# multiply each chunk by factor of its corresponding beat time value
-#     	# if a note goes over, then you have to proportioanlly divide
-#     	# meaning you'll need the LCM between the source and target if beats 
-#     	# are present, if they're note you just have to figure out how much 
-#     	# they go over
-#     	pass
-
-
-# def transform_tempo(source_durations, source_time_val, target_beat_durations, target_beat_time_val):
-#     """
-#     Transforms the source durrations to the beat values specified in the target
-
-    
-#     Parameters
-#     ----------
-#     source_durations : numpy.ndarray[numpy.float64]
-#         durations of note/chord of the source material
-#     source_time_val : numpy.ndarray[numpy.float64]
-#         time values of the note/chord of the source material
-#     target_beat_durations : numpy.ndarray[numpy.float64]
-#         durations of the beat values of the target
-#     target_beat_time_val : numpy.ndarray[numpy.float64]
-#         time values of the beat values of the target
-
-
-#     Returns
-#     -------
-#     time_val : numpy.ndarray[numpy.float64]
-#         the time value of the sequence starting at 0
-#     durations : numpy.ndarray[numpy.float64]
-#         durations of each note/chord
-#     """
-#     source_seq_duration = np.sum(source_durations)
-#     target_seq_duration = np.sum(target_beat_durations)
-    
-#     scale_factor = target_seq_duration / source_seq_duration
-#     transformed_durations = source_durations * scale_factor
-#     transformed_time_val = np.cumsum(transformed_durations) - transformed_durations[0]
-
-    
-#     return transformed_time_val, transformed_durations
-
 def transform_tempo(source_durations, target_beat_durations):
     """
     Transforms the source durrations to the beat values specified in the target
@@ -398,12 +299,8 @@ def transform_tempo(source_durations, target_beat_durations):
     ----------
     source_durations : numpy.ndarray[numpy.float64]
         durations of note/chord of the source material
-    source_time_val : numpy.ndarray[numpy.float64]
-        time values of the note/chord of the source material
     target_beat_durations : numpy.ndarray[numpy.float64]
         durations of the beat values of the target
-    target_beat_time_val : numpy.ndarray[numpy.float64]
-        time values of the beat values of the target
 
 
     Returns
@@ -418,13 +315,11 @@ def transform_tempo(source_durations, target_beat_durations):
     target_lcm = np.lcm(len_target, len_source)
     scaled_source_durations = np.zeros(len_source * target_lcm)
    
-    # 
     for i in range(len(scaled_source_durations)):
     	target_beat_idx = int(np.floor((i * len_target) / (len_source * target_lcm)))
     	num_parts = int(len_source * target_lcm // len_target)
     	scaled_source_durations[i] = target_beat_durations[target_beat_idx] / num_parts
 
-    # print(f"scaled durations:\n\n{scaled_source_durations}\n\n\n**\n\n")
     transformed_durations = np.zeros(len_source)
     step_size = len_source * target_lcm // len_source 
     for j in range(len_source):
@@ -489,9 +384,3 @@ def calculate_beats(start_bpm, end_bpm, total_duration, bpm_step=None):
             beat_times[beats] = current_bpm
 
     return (beats, beat_times) if bpm_step else beats
-
-
-
-
-
-

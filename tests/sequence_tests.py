@@ -203,8 +203,8 @@ class TestSequenceMethods(unittest.TestCase):
 		test_time_vals = np.array([0.0, 1.0, 2.0, 3.0])
 		test_durations = np.array([1.0, 1.0, 1.0, 1.0])
 		time_val, durations = pygliss.sequence.get_tempo_vals(start_bpm, beats)
-		assert np.array_equal(test_time_vals, time_val) == True
-		assert np.array_equal(test_durations, durations) == True
+		assert np.array_equal(test_time_vals, time_val)
+		assert np.array_equal(test_durations, durations)
 
 
 	def test_get_tempo_vals_2(self):
@@ -220,8 +220,161 @@ class TestSequenceMethods(unittest.TestCase):
 				test_time_vals[i] = test_time_vals[i-1] + test_durations[i-1]
 
 		time_val, durations = pygliss.sequence.get_tempo_vals(start_bpm, beats, end_bpm=end_bpm)
-		assert np.array_equal(test_time_vals, time_val) == True
-		assert np.array_equal(test_durations, durations) == True
+		assert np.array_equal(test_time_vals, time_val)
+		assert np.array_equal(test_durations, durations)
+
+	def test_transform_tempo_1(self):
+		# 4 beats @ 60bpm
+		source_time_val = np.array([0.0, 1.0, 2.0, 3.0])
+		source_durations = np.array([1.0, 1.0, 1.0, 1.0])
+
+		# 8 beats @ 120bpm
+		target_beat_time_val = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5])
+		target_beat_durations = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+		time_val, durations = pygliss.sequence.transform_tempo(source_durations, 
+			target_beat_durations)
+
+		# transform_tempo
+		test_time_val = np.array([0.0, 1.0, 2.0, 3.0])
+		test_durations = np.array([1.0, 1.0, 1.0, 1.0])
+		assert np.array_equal(time_val, test_time_val)
+		assert np.array_equal(durations, test_durations)
+
+	
+	def test_transform_tempo_2(self):
+		# no beats octave gliss
+		source_time_val = np.array([i / 12 for i in range(12)])
+		source_durations = np.array([1/12]*12)
+
+		# 4 beats @ 60bpm
+		target_beat_time_val = np.array([0.0, 1.0, 2.0, 3.0])
+		target_beat_durations = np.array([1.0, 1.0, 1.0, 1.0])
+
+
+		# time_val, durations = pygliss.sequence.transform_tempo(source_durations, source_time_val, 
+		# 	target_beat_durations, target_beat_time_val)
+		time_val, durations = pygliss.sequence.transform_tempo(source_durations, 
+			target_beat_durations)
+
+		# transform_tempo
+		test_time_val = source_time_val * 4
+		test_durations = source_durations * 4
+
+		assert np.allclose(time_val, test_time_val)
+		assert np.allclose(durations, test_durations)
+
+	def test_transform_tempo_3(self):
+		# no beats octave gliss
+		source_time_val = np.array([i / 12 for i in range(12)])
+		source_durations = np.array([1/12]*12)
+
+		# 6 beats @ 60bpm -> 120bpm
+		target_beat_durations = np.array([60 / val for val in [60.0, 70.0, 80.0, 90.0, 100.0, 110.0]])
+		target_beat_time_val = np.zeros(len(target_beat_durations))
+		for i in range(len(target_beat_durations)):
+			if i > 0:
+				target_beat_time_val[i] = target_beat_time_val[i-1] + target_beat_durations[i-1]
+
+
+		# time_val, durations = pygliss.sequence.transform_tempo(source_durations, source_time_val, 
+		# 	target_beat_durations, target_beat_time_val)
+
+		time_val, durations = pygliss.sequence.transform_tempo(source_durations, 
+			target_beat_durations)
+
+		# transform_tempo
+		test_durations = []
+		for i in range(len(target_beat_durations)):
+			test_durations.append(target_beat_durations[i]/2)
+			test_durations.append(target_beat_durations[i]/2)
+		
+		test_durations = np.array(test_durations)
+		test_time_val = np.zeros(len(test_durations))
+		for i in range(len(test_durations)):
+			if i > 0:
+				test_time_val[i] = test_time_val[i-1] + test_durations[i-1]
+
+		assert np.allclose(time_val, test_time_val)
+		assert np.allclose(durations, test_durations)
+
+	def test_transform_tempo_4(self):
+		# no beats octave gliss
+		gliss_len = 18
+		source_time_val = np.array([i / gliss_len for i in range(gliss_len)])
+		source_durations = np.array([1/gliss_len]*gliss_len)
+
+		# 6 beats @ 60bpm -> 120bpm
+		target_beat_durations = np.array([60 / val for val in [60.0, 70.0, 80.0, 90.0, 100.0, 110.0]])
+		target_beat_time_val = np.zeros(len(target_beat_durations))
+		for i in range(len(target_beat_durations)):
+			if i > 0:
+				target_beat_time_val[i] = target_beat_time_val[i-1] + target_beat_durations[i-1]
+
+		time_val, durations = pygliss.sequence.transform_tempo(source_durations, 
+			target_beat_durations)
+
+		# transform_tempo
+		target_lcm = 42 # lcm(18, 6) = 18
+		test_durations = []
+		for i in range(len(target_beat_durations)):
+			test_durations.append(target_beat_durations[i]/3)
+			test_durations.append(target_beat_durations[i]/3)
+			test_durations.append(target_beat_durations[i]/3)
+		
+		test_durations = np.array(test_durations)
+		test_time_val = np.zeros(len(test_durations))
+		for i in range(len(test_durations)):
+			if i > 0:
+				test_time_val[i] = test_time_val[i-1] + test_durations[i-1]
+
+
+		assert np.allclose(time_val, test_time_val)
+		assert np.allclose(durations, test_durations)
+
+	def test_transform_tempo_5(self):
+		# no beats octave gliss
+		gliss_len = 14
+		source_time_val = np.array([i / gliss_len for i in range(gliss_len)])
+		source_durations = np.array([1/gliss_len]*gliss_len)
+
+		# 6 beats @ 60bpm -> 120bpm
+		target_beat_durations = np.array([60 / val for val in [60.0, 70.0, 80.0, 90.0, 100.0, 110.0]])
+		target_beat_time_val = np.zeros(len(target_beat_durations))
+		for i in range(len(target_beat_durations)):
+			if i > 0:
+				target_beat_time_val[i] = target_beat_time_val[i-1] + target_beat_durations[i-1]
+
+		time_val, durations = pygliss.sequence.transform_tempo(source_durations, 
+			target_beat_durations)
+
+		# transform_tempo
+		# lcm(14, 6) = 42, 42 / 14 = 3, 42 / 6 = 7
+		test_durations = [
+			(target_beat_durations[0] / 7) * 3,
+			(target_beat_durations[0] / 7) * 3,
+			(target_beat_durations[0] / 7) + (target_beat_durations[1] / 7) * 2,
+			(target_beat_durations[1] / 7) * 3,
+			(target_beat_durations[1] / 7) * 2 + (target_beat_durations[2] / 7),
+			(target_beat_durations[2] / 7) * 3,
+			(target_beat_durations[2] / 7) * 3,
+			(target_beat_durations[3] / 7) * 3,
+			(target_beat_durations[3] / 7) * 3,
+			(target_beat_durations[3] / 7) + (target_beat_durations[4] / 7) * 2,
+			(target_beat_durations[4] / 7) * 3,
+			(target_beat_durations[4] / 7) * 2 + (target_beat_durations[5] / 7),
+			(target_beat_durations[5] / 7) * 3,
+			(target_beat_durations[5] / 7) * 3
+		]
+		
+		test_durations = np.array(test_durations)
+		test_time_val = np.zeros(len(test_durations))
+		for i in range(len(test_durations)):
+			if i > 0:
+				test_time_val[i] = test_time_val[i-1] + test_durations[i-1]
+
+		assert np.allclose(time_val, test_time_val)
+		assert np.allclose(durations, test_durations)
 
 
 

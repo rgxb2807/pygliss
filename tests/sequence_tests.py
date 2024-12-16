@@ -465,8 +465,6 @@ class TestSequenceMethods(unittest.TestCase):
 			pygliss.note.Note('A', 5).frequency()]
 			])
 
-		print("durations", comb_seq.durations)
-
 		assert np.allclose(comb_seq.time_val, np.array(test_time_val))
 		assert np.array_equal(test_chords, comb_seq.chords)
 
@@ -513,10 +511,9 @@ class TestSequenceMethods(unittest.TestCase):
 		time_val_2 = np.arange(len(chords_2)) / len(chords_2)
 		
 		chords_seq_2 = pygliss.sequence.ChordSequence(chords_2, time_val_2, durations_2)
-		# chords_seq_2.add_offset(10)
 
 		comb_seq = chords_seq_1.concat(chords_seq_2)
-		test_time_val = [0.0, 0.25, 0.333333, 0.5, 0.6666666, 0.75]
+		test_time_val = [0.0, 0.333333, 0.6666666, 1.25, 2.5, 3.75]
 		test_chords = np.array([
 			[pygliss.note.Note('C', 4).frequency(),
 			pygliss.note.Note('E', 4).frequency(),
@@ -543,6 +540,182 @@ class TestSequenceMethods(unittest.TestCase):
 			pygliss.note.Note('E', 4).frequency(),
 			pygliss.note.Note('G', 4).frequency(),
 			pygliss.note.Note('C', 5).frequency(),
+			0, 0, 0],
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			0, 0, 0],
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			0, 0, 0]
+			])
+
+		assert np.array_equal(test_chords, comb_seq.chords)
+		assert np.allclose(comb_seq.time_val, np.array(test_time_val))
+
+
+	def test_concat_seq_3(self):
+		chords_1 = np.array([
+				[pygliss.note.Note('C', 4).frequency(),
+				pygliss.note.Note('E', 4).frequency(),
+				pygliss.note.Note('G', 4).frequency(),
+				pygliss.note.Note('C', 5).frequency()],
+				[pygliss.note.Note('C', 4).frequency(),
+				pygliss.note.Note('E', 4).frequency(),
+				pygliss.note.Note('G', 4).frequency(),
+				pygliss.note.Note('C', 5).frequency()],
+				[pygliss.note.Note('C', 4).frequency(),
+				pygliss.note.Note('E', 4).frequency(),
+				pygliss.note.Note('G', 4).frequency(),
+				pygliss.note.Note('C', 5).frequency()],
+				[pygliss.note.Note('C', 4).frequency(),
+				pygliss.note.Note('E', 4).frequency(),
+				pygliss.note.Note('G', 4).frequency(),
+				pygliss.note.Note('C', 5).frequency()]
+			])
+		durations_1 = np.ones(len(chords_1)) / len(chords_1)
+		time_val_1 = np.arange(len(chords_1)) / len(chords_1)
+
+		durations_1 = durations_1
+		time_val_1 = time_val_1
+		
+		chords_seq_1 = pygliss.sequence.ChordSequence(chords_1, time_val_1, durations_1)
+		chords_seq_1.add_offset(4)
+
+		chords_2 = np.array([
+				[pygliss.note.Note('D', 5).frequency(),
+				pygliss.note.Note('F', 5).frequency(),
+				pygliss.note.Note('A', 5).frequency()],
+				[pygliss.note.Note('D', 5).frequency(),
+				pygliss.note.Note('F', 5).frequency(),
+				pygliss.note.Note('A', 5).frequency()],
+				[pygliss.note.Note('D', 5).frequency(),
+				pygliss.note.Note('F', 5).frequency(),
+				pygliss.note.Note('A', 5).frequency()]
+			])
+		durations_2 = np.ones(len(chords_2)) / len(chords_2) * 3
+		time_val_2 = np.arange(len(chords_2)) / len(chords_2) * 3
+		chords_seq_2 = pygliss.sequence.ChordSequence(chords_2, time_val_2, durations_2)
+
+
+		comb_seq = chords_seq_1.concat(chords_seq_2)
+		test_time_val = [0.0, 1.0, 2.0, 4.0, 4.25, 4.5, 4.75]
+		test_chords = np.array([
+			[0.0, 0.0, 0.0, 0.0,
+			pygliss.note.Note('D', 5).frequency(),
+			pygliss.note.Note('F', 5).frequency(),
+			pygliss.note.Note('A', 5).frequency()],
+			[0.0, 0.0, 0.0, 0.0,
+			pygliss.note.Note('D', 5).frequency(),
+			pygliss.note.Note('F', 5).frequency(),
+			pygliss.note.Note('A', 5).frequency()],
+			[0.0, 0.0, 0.0, 0.0,
+			pygliss.note.Note('D', 5).frequency(),
+			pygliss.note.Note('F', 5).frequency(),
+			pygliss.note.Note('A', 5).frequency()],
+			[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			0.0, 0.0, 0.0],
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			0.0, 0.0, 0.0],
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			0.0, 0.0, 0.0]
+			])
+
+		print(f"test 3")
+		print("chords_seq_1.durations", chords_seq_1.durations)
+		print("chords_seq_1.time_val", chords_seq_1.time_val)
+		print("chords_seq_2.durations", chords_seq_2.durations)
+		print("chords_seq_2.time_val", chords_seq_2.time_val)
+		print(f"comb_seq.time_val", comb_seq.time_val)
+		print(f"comb_seq.durations", comb_seq.durations)
+		print(f"test_time_val", test_time_val)
+		print("\n\ncomb_seq.chords\n\n", comb_seq.chords, "\n\n\n")
+		print("\n\ntest_chords\n\n", test_chords, "\n\n\n")
+
+		assert np.array_equal(test_chords, comb_seq.chords)
+		assert np.array_equal(comb_seq.time_val, np.array(test_time_val))
+
+	def test_concat_seq_4(self):
+
+		chords_1 = np.array([
+				[pygliss.note.Note('C', 4).frequency(),
+				pygliss.note.Note('E', 4).frequency(),
+				pygliss.note.Note('G', 4).frequency(),
+				pygliss.note.Note('C', 5).frequency()],
+				[pygliss.note.Note('C', 4).frequency(),
+				pygliss.note.Note('E', 4).frequency(),
+				pygliss.note.Note('G', 4).frequency(),
+				pygliss.note.Note('C', 5).frequency()],
+				[pygliss.note.Note('C', 4).frequency(),
+				pygliss.note.Note('E', 4).frequency(),
+				pygliss.note.Note('G', 4).frequency(),
+				pygliss.note.Note('C', 5).frequency()],
+				[pygliss.note.Note('C', 4).frequency(),
+				pygliss.note.Note('E', 4).frequency(),
+				pygliss.note.Note('G', 4).frequency(),
+				pygliss.note.Note('C', 5).frequency()]
+			])
+		durations_1 = np.ones(len(chords_1)) / len(chords_1)
+		time_val_1 = np.arange(len(chords_1)) / len(chords_1)
+
+		durations_1 = durations_1 * 4
+		time_val_1 = time_val_1 * 4
+		chords_seq_1 = pygliss.sequence.ChordSequence(chords_1, time_val_1, durations_1)
+
+
+		chords_2 = np.array([
+				[pygliss.note.Note('D', 5).frequency(),
+				pygliss.note.Note('F', 5).frequency(),
+				pygliss.note.Note('A', 5).frequency()],
+				[pygliss.note.Note('D', 5).frequency(),
+				pygliss.note.Note('F', 5).frequency(),
+				pygliss.note.Note('A', 5).frequency()],
+				[pygliss.note.Note('D', 5).frequency(),
+				pygliss.note.Note('F', 5).frequency(),
+				pygliss.note.Note('A', 5).frequency()]
+			])
+		durations_2 = np.ones(len(chords_2)) / len(chords_2)
+		time_val_2 = np.arange(len(chords_2)) / len(chords_2)
+		
+		chords_seq_2 = pygliss.sequence.ChordSequence(chords_2, time_val_2, durations_2)
+		chords_seq_2.add_offset(3)
+
+		comb_seq = chords_seq_1.concat(chords_seq_2)
+		test_time_val = [0.0, 0.333333, 0.6666666, 1.0, 2, 3.0]
+		test_time_val = np.array([0.0, 1.0, 2.0, 3.0, 3.33333333, 3.66666667])
+		test_chords = np.array([
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			0.0, 0.0, 0.0],
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			0.0, 0.0, 0.0],
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			0.0, 0.0, 0.0],
+			[pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
 			pygliss.note.Note('D', 5).frequency(),
 			pygliss.note.Note('F', 5).frequency(),
 			pygliss.note.Note('A', 5).frequency()],
@@ -562,14 +735,17 @@ class TestSequenceMethods(unittest.TestCase):
 			pygliss.note.Note('A', 5).frequency()]
 			])
 
-		print(f"comb_seq.time_val", comb_seq.time_val)
-		print(f"comb_seq.durations", comb_seq.durations)
-		print(f"test_time_val", test_time_val)
-		print("\n\ncomb_seq.chords\n\n", comb_seq.chords, "\n\n\n")
-
-		assert np.allclose(comb_seq.time_val, np.array(test_time_val))
-		assert np.array_equal(test_chords, comb_seq.chords)
-
+		# print(f"test 4")
+		# print("chords_seq_1.durations", chords_seq_1.durations)
+		# print("chords_seq_1.time_val", chords_seq_1.time_val)
+		# print("chords_seq_2.durations", chords_seq_2.durations)
+		# print("chords_seq_2.time_val", chords_seq_2.time_val)
+		# print(f"comb_seq.time_val", comb_seq.time_val)
+		# print(f"comb_seq.durations", comb_seq.durations)
+		# print(f"test_time_val", test_time_val)
+		# print("\n\ncomb_seq.chords\n\n", comb_seq.chords, "\n\n\n")
+		assert np.allclose(test_chords, comb_seq.chords)
+		assert np.allclose(comb_seq.time_val, test_time_val)
 
 
 

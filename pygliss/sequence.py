@@ -144,6 +144,9 @@ class ChordSequence:
 	    time_vals = np.sort(np.unique(np.concatenate((time_tuple))))
 	    
 	    # create array for time, glissandi and note durations
+	    # TODO - introduce concept of rests
+	    # there may be sections where no sounds are happening in the concat
+	    # make sure that's represent
 	    self_dim = self.chords.shape[1]
 	    other_dim = other.chords.shape[1]
 	    chords = np.zeros((time_vals.shape[0], self_dim + other_dim))
@@ -151,12 +154,22 @@ class ChordSequence:
 	    # calculate durations
 	    diff = np.diff(time_vals)
 	    total_duration = np.maximum(np.sum(self.durations), np.sum(other.durations))
-	    print(f"diff:{diff} total_duration:{total_duration}")
-
 	    durations = np.append(diff, [total_duration - np.sum(diff)])
+	    
 	    chord_idx, other_idx = 0,0
-	    for idx, time_val in enumerate(time_vals):
+	    chord_dur_time_val_start = self.durations[0]
+	    other_dur_time_val_start = other.durations[0]
 
+	    for idx, (time_val, duration) in enumerate(zip(time_vals, durations)):
+
+	    	if time_val == (chord_dur_time_val_start + self.time_val[chord_idx]) and chord_idx + 1 < len(self.chords):
+	    		chord_idx += 1
+	    		chord_dur_time_val_start = time_val
+
+	    	if time_val == (other_dur_time_val_start + other.time_val[other_idx]) and other_idx + 1 < len(other.chords):
+	    		other_idx += 1
+	    		other_dur_time_val_start = time_val
+	    	
 	    	if chord_idx == len(self.chords) - 1 and self.time_val[chord_idx] + self.durations[chord_idx] < time_val:
 	    		pass
 	    	else:
@@ -167,15 +180,21 @@ class ChordSequence:
 	    	else:
 	    		chords[idx, self_dim:] = other.chords[other_idx, :]
 
-	    	if self.time_val[chord_idx] == time_val and chord_idx + 1 < len(self.chords):
-	    		chord_idx += 1
+	    	# if self.time_val[chord_idx] == time_val and chord_idx + 1 < len(self.chords):
+	    	# 	chord_idx += 1
 
-	    	if other.time_val[other_idx] == time_val and other_idx + 1 < len(other.chords):
-	    		other_idx += 1
+	    	# if other.time_val[other_idx] == time_val and other_idx + 1 < len(other.chords):
+	    	# 	other_idx += 1
+
+	    	# if time_val == (chord_dur_time_val_start + self.time_val[chord_idx]) and chord_idx + 1 < len(self.chords):
+	    	# 	chord_idx += 1
+	    	# 	chord_dur_time_val_start = time_val
+
+	    	# if time_val == (other_dur_time_val_start + other.time_val[other_idx]) and other_idx + 1 < len(other.chords):
+	    	# 	other_idx += 1
+	    	# 	other_dur_time_val_start = time_val
 	    
 	    chord_seq = ChordSequence(chords, time_vals, durations)
-	    print(f"** time_vals", time_vals)
-	    print(f"** durations", durations)
 	    return chord_seq
 
 	def add_offset_at_position(self, silence_duration, durations_idx):

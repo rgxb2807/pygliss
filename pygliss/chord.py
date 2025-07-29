@@ -402,6 +402,7 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
         chord frequencies of nearest overtone : numpy.ndarray[numpy.float64]
             the nearest overtone chord frequencies as a numpy array
     """
+    chord_freq = chord_freq[chord_freq >= NOTE_VECTOR[0]]
     chord_freq = np.sort(chord_freq)
     chord_steps = find_note_vector_position_vectorized(chord_freq)
     len_notes = len(chord_freq)
@@ -578,7 +579,7 @@ def filter_fm_ot_chords(chords, ot_subharm=12, ot_dist=0, fm_roughness=10):
             # include original chord
             if cur_ot_dist != 0:
                 candidate_chords.append({
-                    "type":f"ot_dist_{cur_ot_dist}",
+                    "type":f"ot_dist_{cur_ot_dist}_fund_{ot.fundamental_note()}",
                     "roughness":None,
                     "chord":chord,
                     "full_roughness":None

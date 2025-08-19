@@ -1,9 +1,19 @@
 import numpy as np
 import math
-from pygliss.note import Note, freq_to_note
-from music21 import pitch, corpus, midi, stream, tempo, duration, note as m21note, tie, chord, articulations
-
-
+from pygliss.note import Note, freq_to_note, NOTE_VECTOR
+from music21 import (
+    pitch,
+    corpus,
+    midi,
+    stream,
+    tempo,
+    duration,
+    note as m21note,
+    tie,
+    chord,
+    articulations,
+    clef
+)
 
 def get_mus21_pitch_str(note):
 	"""Convert pygliss.note to music21.pitch."""
@@ -371,9 +381,14 @@ def get_mus21_chord(chord):
 
 def get_chord_arp_stream(chords, bpm=60, length=0.25, add_number=False):
 	parts = [stream.Part(), stream.Part()]
+	parts[0].append(clef.TrebleClef())  # Force treble clef
+	parts[1].append(clef.BassClef())   # Force bass clef
+
 	parts.append(tempo.MetronomeMark(number=bpm))
 	for chord in chords:
 		for idx, note in enumerate(chord.notes):
+			if note <= NOTE_VECTOR[0]:
+				continue
 			n = m21note.Note(get_mus21_pitch(freq_to_note(note)), 
 				quarterLength=length)
 
@@ -401,6 +416,8 @@ def get_chord_stream(chords, bpm=60, length=0.25):
 		m21chord_high = []
 		m21chord_low = []
 		for idx, note in enumerate(c.notes):
+			if note <= NOTE_VECTOR[0]:
+				continue
 			n = get_mus21_pitch_str(freq_to_note(note))
 			if note > 261:
 				m21chord_high.append(n)

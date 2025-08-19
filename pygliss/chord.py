@@ -3,6 +3,7 @@ from pygliss.constants import LOW, HIGH, MAX_CHORD_LENGTH
 
 import itertools
 import numpy as np
+import warnings
 
 
 class Chord:
@@ -35,7 +36,7 @@ class Chord:
 
     """
 
-    def __init__(self, notes, duration=1):
+    def __init__(self, notes, duration=1, raise_thresh_error=False):
         """
         Contructs Chord
 
@@ -48,6 +49,27 @@ class Chord:
         """
 
         self.notes = np.sort(notes)
+        # Low Threshold Check
+        if np.any(self.notes < LOW):
+            notes_too_low = self.notes[self.notes < LOW]
+            if raise_thresh_error is False:
+                warnings.warn(f"Chord Input Notes contain frequences lower than lowest note threshold - {notes_too_low}, these notes will be removed")
+                self.notes = self.notes[self.notes > LOW]
+            else:
+                raise ValueError(f"Chord Input Notes contain frequences lower than the lowest note threshold - {notes_too_low}")
+
+
+        # High Threshold Check
+        if np.any(self.notes > HIGH):
+            notes_too_high = self.notes[self.notes > HIGH]
+            if raise_thresh_error is False:
+                warnings.warn(f"Chord Input Notes contain frequences higher than the highest note threshold - {notes_too_high}, these notes will be removed")
+                self.notes = self.notes[self.notes < HIGH]
+            else:
+                raise ValueError(f"Chord Input Notes contain frequences higher than the highest note threshold -  {notes_too_high}")
+
+
+
         self.duration = duration
         self.length = len(notes)
         self.steps = find_note_vector_position_vectorized(notes)

@@ -43,9 +43,52 @@ class NoteSequence:
 		"""Returns list of Note objects from note sequence"""
 		return [freq_to_note(self.notes[i]) for i in range(self.length)]
 
-	def concat(self, other):
-		"""TODO"""
-		pass
+	def concat(self, other, sequential=True, repeat_overlap=False):
+		"""
+		other : NoteSequence
+		sequential : bool
+			When true, `other` will succeed `self`
+		repeat_overlap : bool
+			When false, if the last note of self and the first note of other
+			are the same, only one instance of the note is kept
+
+		"""
+		if not sequential:
+			raise NotImplementedError("Concat with NoteSequence only supports sequential concatenation")
+		
+		new_notes, new_duration, new_time_val = None, None, None
+		if not repeat_overlap and self.notes[-1] == other.notes[0]:
+			new_notes = np.zeros(len(self.notes) + len(other.notes) - 1)
+			new_duration = np.zeros(len(self.notes) + len(other.notes) - 1)
+			new_time_val = np.zeros(len(self.notes) + len(other.notes) - 1)
+		else:
+			new_notes = np.zeros(len(self.notes) + len(other.notes))
+			new_duration = np.zeros(len(self.notes) + len(other.notes))
+			new_time_val = np.zeros(len(self.notes) + len(other.notes))
+
+		# print(f"self.notes[-1] == other.notes[0]", self.notes[-1] == other.notes[0])
+		# print(self.notes[-1], other.notes[0])
+		# print(f"new_notes:{new_notes.shape}")
+
+
+		new_notes[:len(self.notes)] = self.notes
+		new_duration[:len(self.notes)] = self.durations
+		new_time_val[:len(self.notes)] = self.time_val
+
+		other_idx = 0
+		if not repeat_overlap and self.notes[-1] == other.notes[0]:
+			other_idx = 1
+		new_notes[len(self.notes):] = other.notes[other_idx:]
+		new_duration[len(self.notes):] = other.durations[other_idx:]
+		new_time_val[len(self.notes):] = np.sum(self.durations) + other.time_val[other_idx:]
+
+		new_sequence = NoteSequence(new_notes, new_time_val, new_duration)
+		return new_sequence
+
+
+
+
+
 
 	def add_offset_at_position(self, silence_duration, durations_idx):
 		"""Adds silence in seconds at specified `durations` idx """

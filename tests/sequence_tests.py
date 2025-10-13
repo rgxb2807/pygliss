@@ -91,6 +91,92 @@ class TestSequenceMethods(unittest.TestCase):
 		assert note_seq.time_val[4] == 0.5
 
 
+	def test_note_seq_concat_1(self):
+		notes = np.array([
+			pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('D', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('F', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('A', 4).frequency(),
+			pygliss.note.Note('B', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			])
+		durations = np.ones(len(notes)) / len(notes)
+		time_val = np.arange(len(notes)) / len(notes)
+		note_seq = pygliss.sequence.NoteSequence(notes, time_val, durations)
+
+
+
+		notes_other = np.array([
+			pygliss.note.Note('C', 5).frequency(),
+			pygliss.note.Note('B', 4).frequency(),
+			pygliss.note.Note('A', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('F', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('D', 4).frequency(),
+			pygliss.note.Note('C', 4).frequency(),
+			])
+
+
+		durations_other = np.ones(len(notes_other)) / len(notes_other)
+		time_val_other = np.arange(len(notes_other)) / len(notes_other)
+		note_seq_other = pygliss.sequence.NoteSequence(notes_other, time_val_other, durations_other)
+
+		new_seq = note_seq.concat(note_seq_other)
+		assert len(new_seq.notes) == 15
+		assert new_seq.durations[0] == (1/8)
+		assert new_seq.durations[-1] == (1/8)
+		assert new_seq.time_val[0] == 0.0
+		assert new_seq.time_val[-1] == (1 + 7/8)
+		assert new_seq.notes[7] == pygliss.note.Note('C', 5).frequency()
+		assert new_seq.notes[8] == pygliss.note.Note('B', 4).frequency()
+
+	def test_note_seq_concat_2(self):
+		notes = np.array([
+			pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('D', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('F', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('A', 4).frequency(),
+			pygliss.note.Note('B', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			])
+		durations = np.ones(len(notes)) / len(notes)
+		time_val = np.arange(len(notes)) / len(notes)
+		note_seq = pygliss.sequence.NoteSequence(notes, time_val, durations)
+
+
+
+		notes_other = np.array([
+			pygliss.note.Note('C', 4).frequency(),
+			pygliss.note.Note('D', 4).frequency(),
+			pygliss.note.Note('E', 4).frequency(),
+			pygliss.note.Note('F', 4).frequency(),
+			pygliss.note.Note('G', 4).frequency(),
+			pygliss.note.Note('A', 4).frequency(),
+			pygliss.note.Note('B', 4).frequency(),
+			pygliss.note.Note('C', 5).frequency(),
+			])
+
+
+		durations_other = np.ones(len(notes_other)) / len(notes_other)
+		time_val_other = np.arange(len(notes_other)) / len(notes_other)
+		note_seq_other = pygliss.sequence.NoteSequence(notes_other, time_val_other, durations_other)
+
+		new_seq = note_seq.concat(note_seq_other)
+		assert len(new_seq.notes) == 16
+		assert new_seq.durations[0] == (1/8)
+		assert new_seq.durations[-1] == (1/8)
+		assert new_seq.time_val[0] == 0.0
+		assert new_seq.time_val[-1] == (1 + 7/8)
+		assert new_seq.notes[7] == pygliss.note.Note('C', 5).frequency()
+		assert new_seq.notes[8] == pygliss.note.Note('C', 4).frequency()
+		assert new_seq.notes[9] == pygliss.note.Note('D', 4).frequency()
+
+
 
 	def test_chord_seq_offset(self):
 		chords = np.array([

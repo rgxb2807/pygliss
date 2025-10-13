@@ -28,7 +28,7 @@ class GlissCmpr(ChordSequence):
 
 
 
-def make_gliss_cmpr_sequence(note_matrix):
+def make_gliss_cmpr_sequence(note_matrix, start_end_pairs=False):
     """
     Returns a list of GlissCmpr objects generated from the note sequences created
     from the not
@@ -42,6 +42,13 @@ def make_gliss_cmpr_sequence(note_matrix):
             `note_matrix[0,1]` and then a gliss from `note_matrix[0,1]` to 
             `note_matrix[0,2]` and so on
 
+        start_end_pairs: bool
+            Set `start_end_pairs` = True when the the note matrix should be 
+            interpretted as start and end pairs. When set to `False` the end 
+            note of one sequence is used as the start of the gliss of the next 
+            sequence. When set to `True` The `note_matrix` will be interpretted
+            as value pairs such that the start note must be explicitly defined 
+
     Returns
     -------
         chord_sequences : a list of pygliss.ChordSequence
@@ -50,9 +57,15 @@ def make_gliss_cmpr_sequence(note_matrix):
 
     """
 
+
     chord_sequences = []
     j_max, i_max = note_matrix.shape
+    if start_end_pairs:
+        assert i_max % 2 == 0 #assert pairs exist
+
     for i in range(i_max-1):
+        if start_end_pairs and i % 2 == 1:
+            continue
         glissandi = []
         for j in range(j_max):
             start = note_matrix[j,i]

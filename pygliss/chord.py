@@ -432,6 +432,7 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
     # generate all possible overtone chords
     all_chord_sets = np.ones((len_notes, m, len_notes))
     for i in range(len_notes):
+        # print(f"chord_freq[i]:{i}:{chord_freq[i]}")
         subharmonics = chord_freq[i] * (1 / np.arange(1, m + 1))
         # filter values lower than human hearing
         # subharmonics = np.where(subharmonics >= LOW, subharmonics, -1)
@@ -452,16 +453,41 @@ def nearest_ot_chord(chord_freq, m, tiebreak=None):
     all_chord_steps = find_note_vector_position_vectorized(all_chord_sets)
     
     # distance by summing stepwise difference along axis
+    # print("all_chord_steps", all_chord_steps)
+    # print()
+    # print("chord_steps", chord_steps)
+
     diff_from_target_chord = np.sum(np.abs(all_chord_steps - chord_steps), axis=2)
 
     # choose subharmonic chord with highest fundamental
+    # print("diff_from_target_chord", diff_from_target_chord, diff_from_target_chord.min())
     min_diff = np.where(diff_from_target_chord == diff_from_target_chord.min())
-    row_idx, chord_idx = min_diff[0][-1], min_diff[1][-1]
-    if tiebreak == "lowest":
-        row_idx, chord_idx = min_diff[0][0], min_diff[1][0]
+    # print(f"\nmin_diff", min_diff)
+    # row_idx, chord_idx = min_diff[0][-1], min_diff[1][-1] # original calc
+    # print(f"row_idx:{row_idx} chord_idx:{chord_idx}")
+    # row_idx, chord_idx = min_diff[0][0], min_diff[1][0] # seems better but not 100% right
+    # print(f"row_idx:{row_idx} chord_idx:{chord_idx}")
+    # if tiebreak == "lowest":
+    #     # row_idx, chord_idx = min_diff[0][0], min_diff[1][0]
+    #     row_idx, chord_idx = min_diff[0][-1], min_diff[1][-1]
+
+    ##do iterative version for sanity check
+    fundamental = float("inf") if tiebreak == "lowest" else 0
+    row_idx, chord_idx = 0, 0
+    for i in range(len(min_diff[0])):
+        temp_row_idx, temp_chord_idx = min_diff[0][i], min_diff[1][i]
+        temp_fund = chord_freq[temp_row_idx] * (1 / (temp_chord_idx + 1))
+        # print(f"i:{i} temp_fund:{temp_fund}")
+        if temp_fund > fundamental and temp_fund >= LOW and tiebreak is None:
+            fundamental = temp_fund
+            row_idx, chord_idx = temp_row_idx, temp_chord_idx
+        elif tiebreak == "lowest" and temp_fund < fundamental and temp_fund >= LOW:
+            fundamental = temp_fund
+            row_idx, chord_idx = temp_row_idx, temp_chord_idx
 
     ot_notes = all_chord_sets[row_idx, chord_idx]
-    fundamental = chord_freq[row_idx] * (1 / (chord_idx + 1))
+    # fundamental = chord_freq[row_idx] * (1 / (chord_idx + 1)) # original solution
+    # print(f"final fund:{fundamental}")
     
     return OvertoneChord(ot_notes, fundamental)
 

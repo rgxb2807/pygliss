@@ -163,6 +163,29 @@ def get_note_steps(note):
     return steps
 
 
+def steps_to_note(steps):
+    """
+    Gets associated steps for a given diatonic note.
+    
+    Parameters
+    ----------
+        note : str
+            the input note str
+    Returns
+    -------
+        steps : float
+            Quarter tone sleps adjusted for the input accidental
+    """
+    steps = 0.0
+    note_map = {"A":0, "B":2, "C":-9, "D":-7, "E":-5, "F":-4, "G":-2}
+    step_val = note_map.get(note)
+    if step_val:
+        steps += step_val * DIV
+    else:
+        steps += 0
+    return steps
+
+
 def get_accidental_steps(accidental):
     """
     Gets associated quarter tone steps for a given accidental.

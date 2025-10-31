@@ -619,7 +619,7 @@ def filter_fm_ot_chords(chords, ot_subharm=12, ot_dist=0, fm_roughness=10):
                     "full_roughness":sol['roughness'],
                     "roughness":calc_roughness(sol['fm_chord'].notes),
                     "chord":sol['fm_chord']
-                })           
+                })          
         ot = nearest_ot_chord(chord.notes, ot_subharm)
         cur_ot_dist = ot.distance(chord)
         if cur_ot_dist <= ot_dist:

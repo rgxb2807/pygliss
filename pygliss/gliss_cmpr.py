@@ -70,7 +70,10 @@ def make_gliss_cmpr_sequence(note_matrix, start_end_pairs=False):
         for j in range(j_max):
             start = note_matrix[j,i]
             end = note_matrix[j, i+1]
-            glissandi.append(Gliss(start, end))
+            if start_end_pairs:
+                glissandi.append(Gliss(start, end, include_end=True))
+            else:
+                glissandi.append(Gliss(start, end))
         chord_sequences.append(GlissCmpr(glissandi))
     return chord_sequences
 

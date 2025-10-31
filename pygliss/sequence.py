@@ -66,11 +66,6 @@ class NoteSequence:
 			new_duration = np.zeros(len(self.notes) + len(other.notes))
 			new_time_val = np.zeros(len(self.notes) + len(other.notes))
 
-		# print(f"self.notes[-1] == other.notes[0]", self.notes[-1] == other.notes[0])
-		# print(self.notes[-1], other.notes[0])
-		# print(f"new_notes:{new_notes.shape}")
-
-
 		new_notes[:len(self.notes)] = self.notes
 		new_duration[:len(self.notes)] = self.durations
 		new_time_val[:len(self.notes)] = self.time_val
